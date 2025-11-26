@@ -7,6 +7,7 @@ import TopRatedSection, { type TopProject } from "@/components/TopRatedSection";
 import Footer from "@/components/Footer";
 import AuthModal from "@/components/AuthModal";
 import ProjectDetailModal, { type ProjectDetail } from "@/components/ProjectDetailModal";
+import AddProjectModal from "@/components/AddProjectModal";
 import { type Project } from "@/components/ProjectCard";
 
 import heroImage from "@assets/stock_images/hong_kong_zhuhai_mac_56c5fcf7.jpg";
@@ -23,6 +24,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedProject, setSelectedProject] = useState<ProjectDetail | null>(null);
   const [projectModalOpen, setProjectModalOpen] = useState(false);
+  const [addProjectModalOpen, setAddProjectModalOpen] = useState(false);
 
   // todo: remove mock functionality - replace with API calls
   const featuredProject: FeaturedProject = {
@@ -240,7 +242,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar onSignIn={handleSignIn} onJoinNow={handleJoinNow} />
+      <Navbar 
+        onSignIn={handleSignIn} 
+        onJoinNow={handleJoinNow}
+        onAddProject={() => setAddProjectModalOpen(true)}
+      />
 
       <main className="pt-16 md:pt-18">
         <HeroSection
@@ -277,6 +283,15 @@ export default function Home() {
         open={projectModalOpen}
         onOpenChange={setProjectModalOpen}
         onSubmitRating={handleSubmitRating}
+      />
+
+      <AddProjectModal
+        open={addProjectModalOpen}
+        onOpenChange={setAddProjectModalOpen}
+        onProjectAdded={() => {
+          // Optionally refresh projects here
+          console.log("Project added successfully");
+        }}
       />
     </div>
   );

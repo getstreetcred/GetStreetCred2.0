@@ -20,16 +20,16 @@ interface NavLink {
 interface NavbarProps {
   onSignIn?: () => void;
   onJoinNow?: () => void;
+  onAddProject?: () => void;
 }
 
-export default function Navbar({ onSignIn, onJoinNow }: NavbarProps) {
+export default function Navbar({ onSignIn, onJoinNow, onAddProject }: NavbarProps) {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks: NavLink[] = [
     { scrollTo: "trending-section", label: "Trending Projects", icon: TrendingUp },
     { scrollTo: "top-rated-section", label: "Top Rated", icon: Award },
-    { href: "/add-project", label: "Add Projects", icon: Plus },
   ];
 
   const isActive = (path: string) => location === path;
@@ -95,6 +95,19 @@ export default function Navbar({ onSignIn, onJoinNow }: NavbarProps) {
 
           <div className="flex items-center gap-2">
             <div className="hidden sm:flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-2"
+                onClick={() => {
+                  console.log("Add project clicked");
+                  onAddProject?.();
+                }}
+                data-testid="button-add-project"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="hidden md:inline">Add Project</span>
+              </Button>
               <Button
                 variant="outline"
                 className="border-primary text-primary"
@@ -171,6 +184,18 @@ export default function Navbar({ onSignIn, onJoinNow }: NavbarProps) {
                       </Button>
                     )
                   ))}
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-3 text-foreground"
+                    onClick={() => {
+                      onAddProject?.();
+                      setMobileMenuOpen(false);
+                    }}
+                    data-testid="mobile-button-add-project"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Project
+                  </Button>
                   <div className="border-t border-border my-4" />
                   <Button
                     variant="outline"
