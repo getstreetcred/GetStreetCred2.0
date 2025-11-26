@@ -223,6 +223,21 @@ export default function Home() {
     setAuthModalOpen(true);
   };
 
+  // Filter projects based on selected category
+  const filteredTrendingProjects = selectedCategory === "all" 
+    ? trendingProjects 
+    : trendingProjects.filter(project => 
+        project.category?.toLowerCase() === selectedCategory.toLowerCase() || 
+        (selectedCategory === "hotel" && project.category === "Hotel & Casino")
+      );
+
+  const filteredTopRatedProjects = selectedCategory === "all"
+    ? topRatedProjects
+    : topRatedProjects.filter(project =>
+        project.category?.toLowerCase() === selectedCategory.toLowerCase() ||
+        (selectedCategory === "hotel" && project.category === "Hotel")
+      );
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar onSignIn={handleSignIn} onJoinNow={handleJoinNow} />
@@ -239,12 +254,12 @@ export default function Home() {
         />
 
         <TrendingSection
-          projects={trendingProjects}
+          projects={filteredTrendingProjects}
           onProjectClick={handleProjectClick}
         />
 
         <TopRatedSection
-          projects={topRatedProjects}
+          projects={filteredTopRatedProjects}
           onProjectClick={handleProjectClick}
         />
       </main>
