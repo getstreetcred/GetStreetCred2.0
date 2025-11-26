@@ -26,9 +26,9 @@ export default function AuthModal({
 }: AuthModalProps) {
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [signInData, setSignInData] = useState({ username: "", password: "" });
+  const [signInData, setSignInData] = useState({ email: "", password: "" });
   const [signUpData, setSignUpData] = useState({
-    username: "",
+    email: "",
     password: "",
     confirmPassword: "",
   });
@@ -37,7 +37,7 @@ export default function AuthModal({
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!signInData.username || !signInData.password) {
+    if (!signInData.email || !signInData.password) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -47,12 +47,12 @@ export default function AuthModal({
     }
     setIsSubmitting(true);
     try {
-      await signin(signInData.username, signInData.password);
+      await signin(signInData.email, signInData.password);
       toast({
         title: "Success",
         description: "Signed in successfully",
       });
-      setSignInData({ username: "", password: "" });
+      setSignInData({ email: "", password: "" });
       onOpenChange(false);
     } catch (error: any) {
       toast({
@@ -67,7 +67,7 @@ export default function AuthModal({
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!signUpData.username || !signUpData.password || !signUpData.confirmPassword) {
+    if (!signUpData.email || !signUpData.password || !signUpData.confirmPassword) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -85,12 +85,12 @@ export default function AuthModal({
     }
     setIsSubmitting(true);
     try {
-      await signup(signUpData.username, signUpData.password);
+      await signup(signUpData.email, signUpData.password);
       toast({
         title: "Success",
         description: "Account created successfully",
       });
-      setSignUpData({ username: "", password: "", confirmPassword: "" });
+      setSignUpData({ email: "", password: "", confirmPassword: "" });
       onOpenChange(false);
     } catch (error: any) {
       toast({
@@ -143,19 +143,19 @@ export default function AuthModal({
           <TabsContent value="signin" className="mt-4">
             <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="signin-username">Username</Label>
+                <Label htmlFor="signin-email">Email</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    id="signin-username"
-                    type="text"
-                    placeholder="your_username"
+                    id="signin-email"
+                    type="email"
+                    placeholder="you@example.com"
                     className="pl-10"
-                    value={signInData.username}
+                    value={signInData.email}
                     onChange={(e) =>
-                      setSignInData({ ...signInData, username: e.target.value })
+                      setSignInData({ ...signInData, email: e.target.value })
                     }
-                    data-testid="input-signin-username"
+                    data-testid="input-signin-email"
                     disabled={isSubmitting}
                   />
                 </div>
@@ -194,19 +194,19 @@ export default function AuthModal({
           <TabsContent value="signup" className="mt-4">
             <form onSubmit={handleSignUp} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="signup-username">Username</Label>
+                <Label htmlFor="signup-email">Email</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    id="signup-username"
-                    type="text"
-                    placeholder="your_username"
+                    id="signup-email"
+                    type="email"
+                    placeholder="you@example.com"
                     className="pl-10"
-                    value={signUpData.username}
+                    value={signUpData.email}
                     onChange={(e) =>
-                      setSignUpData({ ...signUpData, username: e.target.value })
+                      setSignUpData({ ...signUpData, email: e.target.value })
                     }
-                    data-testid="input-signup-username"
+                    data-testid="input-signup-email"
                     disabled={isSubmitting}
                   />
                 </div>

@@ -2,14 +2,14 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 
 export interface AuthUser {
   id: string;
-  username: string;
+  email: string;
 }
 
 interface AuthContextType {
   user: AuthUser | null;
   isLoading: boolean;
-  signin: (username: string, password: string) => Promise<void>;
-  signup: (username: string, password: string) => Promise<void>;
+  signin: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -40,12 +40,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signin = async (username: string, password: string) => {
+  const signin = async (email: string, password: string) => {
     const response = await fetch("/api/auth/signin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ email, password }),
     });
 
     if (!response.ok) {
@@ -56,12 +56,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(data);
   };
 
-  const signup = async (username: string, password: string) => {
+  const signup = async (email: string, password: string) => {
     const response = await fetch("/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ email, password }),
     });
 
     if (!response.ok) {

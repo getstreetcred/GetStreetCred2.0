@@ -23,7 +23,7 @@ function getSupabaseClient(): SupabaseClient | null {
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   getProjects(): Promise<Project[]>;
   getProjectsByCategory(category: string): Promise<Project[]>;
@@ -52,18 +52,18 @@ export class SupabaseStorage implements IStorage {
     return data as User;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
+  async getUserByEmail(email: string): Promise<User | undefined> {
     const sb = getSupabaseClient();
     if (!sb) throw new Error("Supabase not configured");
     
     const { data, error } = await sb
       .from("users")
       .select("*")
-      .eq("username", username)
+      .eq("email", email)
       .single();
     
     if (error) {
-      console.error("Error fetching user by username:", error);
+      console.error("Error fetching user by email:", error);
       return undefined;
     }
     return data as User;
