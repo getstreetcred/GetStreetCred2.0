@@ -20,6 +20,79 @@ import changiJewel from "@assets/stock_images/singapore_changi_air_22d4cc43.jpg"
 import tokyoSkytree from "@assets/stock_images/tokyo_skytree_tower__95808630.jpg";
 import cityscape from "@assets/stock_images/modern_city_skyline__3c956477.jpg";
 
+// Mock projects for fallback
+const MOCK_PROJECTS: Project[] = [
+  {
+    id: "burj-1",
+    name: "Burj Khalifa",
+    location: "Dubai, UAE",
+    imageUrl: burjKhalifa,
+    rating: 4.9,
+    ratingCount: 5420,
+    completionYear: 2010,
+    category: "Skyscraper",
+  },
+  {
+    id: "shanghai-1",
+    name: "Shanghai Tower",
+    location: "Shanghai, China",
+    imageUrl: shanghaiTower,
+    rating: 4.7,
+    ratingCount: 3210,
+    completionYear: 2015,
+    category: "Skyscraper",
+  },
+  {
+    id: "marina-1",
+    name: "Marina Bay Sands",
+    location: "Singapore",
+    imageUrl: marinaBay,
+    rating: 4.8,
+    ratingCount: 4150,
+    completionYear: 2010,
+    category: "Hotel & Casino",
+  },
+  {
+    id: "jewel-1",
+    name: "Changi Airport Jewel",
+    location: "Singapore",
+    imageUrl: changiJewel,
+    rating: 4.9,
+    ratingCount: 2890,
+    completionYear: 2019,
+    category: "Airport",
+  },
+  {
+    id: "skytree-1",
+    name: "Tokyo Skytree",
+    location: "Tokyo, Japan",
+    imageUrl: tokyoSkytree,
+    rating: 4.6,
+    ratingCount: 3780,
+    completionYear: 2012,
+    category: "Tower",
+  },
+  {
+    id: "downtown-1",
+    name: "Dubai Downtown District",
+    location: "Dubai, UAE",
+    imageUrl: cityscape,
+    rating: 4.5,
+    ratingCount: 1920,
+    completionYear: 2020,
+    category: "Urban Development",
+  },
+];
+
+const PROJECT_DESCRIPTIONS: Record<string, string> = {
+  "burj-1": "Standing at 828 meters, Burj Khalifa is the world's tallest building. This architectural marvel features 163 floors above ground and took 6 years to construct, showcasing the pinnacle of modern engineering and design.",
+  "shanghai-1": "Shanghai Tower is a 632-meter supertall skyscraper featuring a unique twisted design that reduces wind loads. It houses offices, hotels, and observation decks with stunning views of the Pudong skyline.",
+  "marina-1": "Marina Bay Sands is an integrated resort featuring three 55-story towers topped by a stunning SkyPark. The iconic design includes the world's largest rooftop infinity pool and has become Singapore's most recognizable landmark.",
+  "jewel-1": "Changi Airport's Jewel is a nature-themed entertainment complex featuring the world's tallest indoor waterfall, the Rain Vortex. It seamlessly blends nature, shopping, and aviation in a stunning glass dome.",
+  "skytree-1": "Tokyo Skytree stands at 634 meters as Japan's tallest structure. This broadcasting tower combines traditional Japanese aesthetics with cutting-edge technology and offers panoramic views of Tokyo from its observation decks.",
+  "downtown-1": "Dubai Downtown is a large-scale urban development centered around the Burj Khalifa. It features world-class shopping, dining, and entertainment venues, representing the height of modern urban planning.",
+};
+
 export default function Home() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<"signin" | "signup">("signin");
@@ -60,85 +133,18 @@ export default function Home() {
     ratingCount: 2340,
   };
 
-  // Combine API projects with mock projects
-  const trendingProjects: Project[] = apiProjects.length > 0 ? apiProjects : [
-    {
-      id: "burj-1",
-      name: "Burj Khalifa",
-      location: "Dubai, UAE",
-      imageUrl: burjKhalifa,
-      rating: 4.9,
-      ratingCount: 5420,
-      completionYear: 2010,
-      category: "Skyscraper",
-    },
-    {
-      id: "shanghai-1",
-      name: "Shanghai Tower",
-      location: "Shanghai, China",
-      imageUrl: shanghaiTower,
-      rating: 4.7,
-      ratingCount: 3210,
-      completionYear: 2015,
-      category: "Skyscraper",
-    },
-    {
-      id: "marina-1",
-      name: "Marina Bay Sands",
-      location: "Singapore",
-      imageUrl: marinaBay,
-      rating: 4.8,
-      ratingCount: 4150,
-      completionYear: 2010,
-      category: "Hotel & Casino",
-    },
-    {
-      id: "jewel-1",
-      name: "Changi Airport Jewel",
-      location: "Singapore",
-      imageUrl: changiJewel,
-      rating: 4.9,
-      ratingCount: 2890,
-      completionYear: 2019,
-      category: "Airport",
-    },
-    {
-      id: "skytree-1",
-      name: "Tokyo Skytree",
-      location: "Tokyo, Japan",
-      imageUrl: tokyoSkytree,
-      rating: 4.6,
-      ratingCount: 3780,
-      completionYear: 2012,
-      category: "Tower",
-    },
-    {
-      id: "downtown-1",
-      name: "Dubai Downtown District",
-      location: "Dubai, UAE",
-      imageUrl: cityscape,
-      rating: 4.5,
-      ratingCount: 1920,
-      completionYear: 2020,
-      category: "Urban Development",
-    },
-  ];
+  // Use API projects if available, otherwise use fallback mock projects
+  const trendingProjects: Project[] = apiProjects && apiProjects.length > 0 
+    ? apiProjects 
+    : MOCK_PROJECTS;
 
   const topRatedProjects: TopProject[] = trendingProjects
     .slice(0, 5)
     .map((p, idx) => ({
       ...p,
       rank: idx + 1,
+      category: p.category || "Infrastructure",
     }));
-
-  const projectDescriptions: Record<string, string> = {
-    "burj-1": "Standing at 828 meters, Burj Khalifa is the world's tallest building. This architectural marvel features 163 floors above ground and took 6 years to construct, showcasing the pinnacle of modern engineering and design.",
-    "shanghai-1": "Shanghai Tower is a 632-meter supertall skyscraper featuring a unique twisted design that reduces wind loads. It houses offices, hotels, and observation decks with stunning views of the Pudong skyline.",
-    "marina-1": "Marina Bay Sands is an integrated resort featuring three 55-story towers topped by a stunning SkyPark. The iconic design includes the world's largest rooftop infinity pool and has become Singapore's most recognizable landmark.",
-    "jewel-1": "Changi Airport's Jewel is a nature-themed entertainment complex featuring the world's tallest indoor waterfall, the Rain Vortex. It seamlessly blends nature, shopping, and aviation in a stunning glass dome.",
-    "skytree-1": "Tokyo Skytree stands at 634 meters as Japan's tallest structure. This broadcasting tower combines traditional Japanese aesthetics with cutting-edge technology and offers panoramic views of Tokyo from its observation decks.",
-    "downtown-1": "Dubai Downtown is a large-scale urban development centered around the Burj Khalifa. It features world-class shopping, dining, and entertainment venues, representing the height of modern urban planning.",
-  };
 
   const handleSignIn = () => {
     setAuthModalTab("signin");
@@ -164,8 +170,8 @@ export default function Home() {
         rating: project.rating,
         ratingCount: project.ratingCount,
         completionYear: project.completionYear,
-        category: project.category,
-        description: project.description || projectDescriptions[project.id] || "An impressive modern infrastructure project showcasing innovative engineering and design.",
+        category: project.category || "Infrastructure",
+        description: project.description || PROJECT_DESCRIPTIONS[project.id] || "An impressive modern infrastructure project showcasing innovative engineering and design.",
       };
       setSelectedProject(projectDetail);
       setProjectModalOpen(true);
