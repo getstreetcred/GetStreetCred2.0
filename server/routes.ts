@@ -88,7 +88,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!email || !password) {
         return res.status(400).json({ error: "Email and password required" });
       }
+      console.log(`Sign up attempt for email: ${email}`);
       const user = await storage.createUser({ username: email, password });
+      console.log(`User created: ${JSON.stringify(user)}`);
       res.status(201).json({ id: user.id, email: user.username });
     } catch (error: any) {
       console.error("Error signing up:", error);
