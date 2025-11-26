@@ -8,7 +8,8 @@ import {
   SheetHeader,
   SheetTitle 
 } from "@/components/ui/sheet";
-import { Navigation, Menu, X, TrendingUp, Award, Plus } from "lucide-react";
+import { Navigation, Menu, X, TrendingUp, Award, Plus, LogOut } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
 
 interface NavLink {
   href?: string;
@@ -26,6 +27,12 @@ interface NavbarProps {
 export default function Navbar({ onSignIn, onJoinNow, onAddProject }: NavbarProps) {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    setMobileMenuOpen(false);
+  };
 
   const navLinks: NavLink[] = [
     { scrollTo: "trending-section", label: "Trending Projects", icon: TrendingUp },
@@ -108,27 +115,41 @@ export default function Navbar({ onSignIn, onJoinNow, onAddProject }: NavbarProp
                 <Plus className="w-4 h-4" />
                 <span className="hidden md:inline">Add Project</span>
               </Button>
-              <Button
-                variant="outline"
-                className="border-primary text-primary"
-                onClick={() => {
-                  console.log("Sign in clicked");
-                  onSignIn?.();
-                }}
-                data-testid="button-sign-in"
-              >
-                Sign In
-              </Button>
-              <Button
-                variant="default"
-                onClick={() => {
-                  console.log("Join now clicked");
-                  onJoinNow?.();
-                }}
-                data-testid="button-join-now"
-              >
-                Join Now
-              </Button>
+              {user ? (
+                <Button
+                  variant="outline"
+                  className="border-primary text-primary gap-2"
+                  onClick={handleLogout}
+                  data-testid="button-logout"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Logout</span>
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    className="border-primary text-primary"
+                    onClick={() => {
+                      console.log("Sign in clicked");
+                      onSignIn?.();
+                    }}
+                    data-testid="button-sign-in"
+                  >
+                    Sign In
+                  </Button>
+                  <Button
+                    variant="default"
+                    onClick={() => {
+                      console.log("Join now clicked");
+                      onJoinNow?.();
+                    }}
+                    data-testid="button-join-now"
+                  >
+                    Join Now
+                  </Button>
+                </>
+              )}
             </div>
 
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -197,30 +218,44 @@ export default function Navbar({ onSignIn, onJoinNow, onAddProject }: NavbarProp
                     Add Project
                   </Button>
                   <div className="border-t border-border my-4" />
-                  <Button
-                    variant="outline"
-                    className="w-full border-primary text-primary"
-                    onClick={() => {
-                      console.log("Sign in clicked");
-                      onSignIn?.();
-                      setMobileMenuOpen(false);
-                    }}
-                    data-testid="mobile-button-sign-in"
-                  >
-                    Sign In
-                  </Button>
-                  <Button
-                    variant="default"
-                    className="w-full"
-                    onClick={() => {
-                      console.log("Join now clicked");
-                      onJoinNow?.();
-                      setMobileMenuOpen(false);
-                    }}
-                    data-testid="mobile-button-join-now"
-                  >
-                    Join Now
-                  </Button>
+                  {user ? (
+                    <Button
+                      variant="outline"
+                      className="w-full border-primary text-primary gap-2"
+                      onClick={handleLogout}
+                      data-testid="mobile-button-logout"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </Button>
+                  ) : (
+                    <>
+                      <Button
+                        variant="outline"
+                        className="w-full border-primary text-primary"
+                        onClick={() => {
+                          console.log("Sign in clicked");
+                          onSignIn?.();
+                          setMobileMenuOpen(false);
+                        }}
+                        data-testid="mobile-button-sign-in"
+                      >
+                        Sign In
+                      </Button>
+                      <Button
+                        variant="default"
+                        className="w-full"
+                        onClick={() => {
+                          console.log("Join now clicked");
+                          onJoinNow?.();
+                          setMobileMenuOpen(false);
+                        }}
+                        data-testid="mobile-button-join-now"
+                      >
+                        Join Now
+                      </Button>
+                    </>
+                  )}
                 </nav>
               </SheetContent>
             </Sheet>
