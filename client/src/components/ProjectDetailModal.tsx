@@ -6,7 +6,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { MapPin, Star, Calendar, Users } from "lucide-react";
+import { MapPin, Star, Calendar, Users, Trash2, Edit } from "lucide-react";
 
 export interface ProjectDetail {
   id: string;
@@ -25,6 +25,8 @@ interface ProjectDetailModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmitRating?: (projectId: string, rating: number, review?: string) => void;
+  onEdit?: (projectId: string) => void;
+  onDelete?: (projectId: string) => void;
 }
 
 export default function ProjectDetailModal({
