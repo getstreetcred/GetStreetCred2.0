@@ -212,6 +212,16 @@ export default function Home() {
     setAddProjectModalOpen(false);
   };
 
+  const handleEditProject = (projectId: string) => {
+    console.log(`Edit project: ${projectId}`);
+    // TODO: Implement edit functionality
+  };
+
+  const handleDeleteProject = (projectId: string) => {
+    console.log(`Delete project: ${projectId}`);
+    // TODO: Implement delete functionality
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar 
@@ -255,6 +265,8 @@ export default function Home() {
         open={projectModalOpen}
         onOpenChange={setProjectModalOpen}
         onSubmitRating={handleSubmitRating}
+        onEdit={handleEditProject}
+        onDelete={handleDeleteProject}
       />
 
       <AddProjectModal

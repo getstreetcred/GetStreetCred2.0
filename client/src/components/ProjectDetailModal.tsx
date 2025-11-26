@@ -34,6 +34,8 @@ export default function ProjectDetailModal({
   open,
   onOpenChange,
   onSubmitRating,
+  onEdit,
+  onDelete,
 }: ProjectDetailModalProps) {
   const [userRating, setUserRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
@@ -66,6 +68,18 @@ export default function ProjectDetailModal({
       setHasSubmitted(false);
     }
     onOpenChange(isOpen);
+  };
+
+  const handleEdit = () => {
+    onEdit?.(project.id);
+    onOpenChange(false);
+  };
+
+  const handleDelete = () => {
+    if (window.confirm(`Are you sure you want to delete "${project.name}"?`)) {
+      onDelete?.(project.id);
+      onOpenChange(false);
+    }
   };
 
   const displayRating = hoverRating || userRating;
@@ -229,6 +243,27 @@ export default function ProjectDetailModal({
                 </Button>
               </div>
             )}
+          </div>
+
+          <div className="border-t border-border pt-4 flex gap-2">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={handleEdit}
+              data-testid="button-edit-project"
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              Edit
+            </Button>
+            <Button
+              variant="destructive"
+              className="flex-1"
+              onClick={handleDelete}
+              data-testid="button-delete-project"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete
+            </Button>
           </div>
         </div>
       </DialogContent>
