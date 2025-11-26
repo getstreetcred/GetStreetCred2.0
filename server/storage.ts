@@ -140,9 +140,19 @@ export class SupabaseStorage implements IStorage {
     const sb = getSupabaseClient();
     if (!sb) throw new Error("Supabase not configured");
     
+    // Transform camelCase to snake_case for Supabase
+    const projectData = {
+      name: project.name,
+      location: project.location,
+      description: project.description,
+      image_url: project.imageUrl,
+      category: project.category,
+      completion_year: project.completionYear,
+    };
+    
     const { data, error } = await sb
       .from("projects")
-      .insert([project])
+      .insert([projectData])
       .select()
       .single();
     
