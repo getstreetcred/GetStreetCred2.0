@@ -100,6 +100,7 @@ export default function Home() {
   const [selectedProject, setSelectedProject] = useState<ProjectDetail | null>(null);
   const [projectModalOpen, setProjectModalOpen] = useState(false);
   const [addProjectModalOpen, setAddProjectModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<any>(null);
 
   // Fetch projects from API
   const { data: apiProjects = [] } = useQuery({
@@ -210,11 +211,16 @@ export default function Home() {
     // Refresh projects from API
     queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
     setAddProjectModalOpen(false);
+    setEditingProject(null);
   };
 
   const handleEditProject = (projectId: string) => {
-    console.log(`Edit project: ${projectId}`);
-    // TODO: Implement edit functionality
+    const project = trendingProjects.find(p => p.id === projectId);
+    if (project) {
+      setEditingProject(project);
+      setAddProjectModalOpen(true);
+      setProjectModalOpen(false);
+    }
   };
 
   const handleDeleteProject = (projectId: string) => {
@@ -271,8 +277,12 @@ export default function Home() {
 
       <AddProjectModal
         open={addProjectModalOpen}
-        onOpenChange={setAddProjectModalOpen}
+        onOpenChange={(open) => {
+          setAddProjectModalOpen(open);
+          if (!open) setEditingProject(null);
+        }}
         onProjectAdded={handleProjectAdded}
+        editingProject={editingProject}
       />
     </div>
   );

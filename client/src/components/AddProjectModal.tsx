@@ -32,6 +32,7 @@ interface AddProjectModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onProjectAdded?: () => void;
+  editingProject?: any;
 }
 
 const categories = [
@@ -50,16 +51,25 @@ export default function AddProjectModal({
   open,
   onOpenChange,
   onProjectAdded,
+  editingProject,
 }: AddProjectModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [yearPickerOpen, setYearPickerOpen] = useState(false);
   const { toast } = useToast();
+  const isEditing = !!editingProject;
 
   const form = useForm({
     resolver: zodResolver(insertProjectSchema),
-    defaultValues: {
+    defaultValues: editingProject ? {
+      name: editingProject.name || "",
+      location: editingProject.location || "",
+      description: editingProject.description || "",
+      imageUrl: editingProject.imageUrl || "",
+      category: editingProject.category || "",
+      completionYear: editingProject.completionYear || new Date().getFullYear(),
+    } : {
       name: "",
       location: "",
       description: "",
@@ -93,22 +103,24 @@ export default function AddProjectModal({
   const handleSubmit = async (data: any) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/projects", {
-        method: "POST",
+      const method = isEditing ? "PATCH" : "POST";
+      const url = isEditing ? `/api/projects/${editingProject.id}` : "/api/projects";
+      const response = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to add project");
+        throw new Error(`Failed to ${isEditing ? "update" : "add"} project`);
       }
 
       const project = await response.json();
-      console.log("Project added:", project);
+      console.log(`Project ${isEditing ? "updated" : "added"}:`, project);
 
       toast({
         title: "Success!",
-        description: `${data.name} has been added to GetStreetCred.`,
+        description: `${data.name} has been ${isEditing ? "updated" : "added"} to GetStreetCred.`,
       });
 
       form.reset();
@@ -117,10 +129,10 @@ export default function AddProjectModal({
       onOpenChange(false);
       onProjectAdded?.();
     } catch (error) {
-      console.error("Error adding project:", error);
+      console.error(`Error ${isEditing ? "updating" : "adding"} project:`, error);
       toast({
         title: "Error",
-        description: "Failed to add project. Please try again.",
+        description: `Failed to ${isEditing ? "update" : "add"} project. Please try again.`,
         variant: "destructive",
       });
     } finally {
@@ -137,9 +149,11 @@ export default function AddProjectModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Infrastructure Project</DialogTitle>
+          <DialogTitle>{isEditing ? "Edit Project" : "Add New Infrastructure Project"}</DialogTitle>
           <DialogDescription>
-            Share an amazing modern infrastructure project with the GetStreetCred community.
+            {isEditing 
+              ? "Update the project details below."
+              : "Share an amazing modern infrastructure project with the GetStreetCred community."}
           </DialogDescription>
         </DialogHeader>
 
@@ -262,31 +276,33 @@ export default function AddProjectModal({
                   <FormLabel>Project Image</FormLabel>
                   <FormControl>
                     <div className="space-y-3">
-                      <label
-                        htmlFor="image-upload"
-                        className="flex items-center justify-center w-full px-4 py-6 border-2 border-dashed border-border rounded-lg hover:border-primary/50 cursor-pointer transition-colors"
-                        data-testid="image-upload-area"
-                      >
-                        <div className="flex flex-col items-center justify-center gap-2">
-                          <Upload className="w-6 h-6 text-muted-foreground" />
-                          <div className="text-sm text-muted-foreground text-center">
-                            <p className="font-medium text-foreground">Click to upload an image</p>
-                            <p className="text-xs">PNG, JPG, GIF up to 10MB</p>
+                      {!imagePreview && !form.watch("imageUrl") ? (
+                        <label
+                          htmlFor="image-upload"
+                          className="flex items-center justify-center w-full px-4 py-6 border-2 border-dashed border-border rounded-lg hover:border-primary/50 cursor-pointer transition-colors"
+                          data-testid="image-upload-area"
+                        >
+                          <div className="flex flex-col items-center justify-center gap-2">
+                            <Upload className="w-6 h-6 text-muted-foreground" />
+                            <div className="text-sm text-muted-foreground text-center">
+                              <p className="font-medium text-foreground">Click to upload an image</p>
+                              <p className="text-xs">PNG, JPG, GIF up to 10MB</p>
+                            </div>
                           </div>
-                        </div>
-                        <input
-                          id="image-upload"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          className="hidden"
-                          data-testid="input-image-file"
-                        />
-                      </label>
-                      {imagePreview && (
+                          <input
+                            id="image-upload"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                            data-testid="input-image-file"
+                          />
+                        </label>
+                      ) : null}
+                      {(imagePreview || form.watch("imageUrl")) && (
                         <div className="relative">
                           <img
-                            src={imagePreview}
+                            src={imagePreview || form.watch("imageUrl")}
                             alt="Preview"
                             className="w-full h-40 object-cover rounded-lg"
                             data-testid="image-preview"
@@ -305,9 +321,23 @@ export default function AddProjectModal({
                           >
                             Remove
                           </Button>
+                          <label
+                            htmlFor="image-upload"
+                            className="absolute bottom-2 left-2 px-2 py-1 bg-background/80 rounded text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                          >
+                            <input
+                              id="image-upload"
+                              type="file"
+                              accept="image/*"
+                              onChange={handleImageUpload}
+                              className="hidden"
+                              data-testid="input-image-file"
+                            />
+                            Change image
+                          </label>
                         </div>
                       )}
-                      {!imagePreview && <p className="text-xs text-muted-foreground">No image selected</p>}
+                      {!imagePreview && !form.watch("imageUrl") && <p className="text-xs text-muted-foreground">No image selected</p>}
                     </div>
                   </FormControl>
                   <FormMessage />
@@ -351,7 +381,7 @@ export default function AddProjectModal({
                 className="flex-1"
                 data-testid="button-submit-project"
               >
-                {isSubmitting ? "Adding..." : "Add Project"}
+                {isSubmitting ? (isEditing ? "Updating..." : "Adding...") : (isEditing ? "Update Project" : "Add Project")}
               </Button>
             </div>
           </form>
