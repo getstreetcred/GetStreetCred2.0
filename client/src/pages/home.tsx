@@ -160,6 +160,24 @@ export default function Home() {
   const handleProjectClick = (projectId: string) => {
     console.log(`Opening project: ${projectId}`);
     
+    // Check if it's the featured project
+    if (projectId === featuredProject.id) {
+      const projectDetail: ProjectDetail = {
+        id: featuredProject.id,
+        name: featuredProject.name,
+        location: featuredProject.location,
+        imageUrl: featuredProject.imageUrl,
+        rating: featuredProject.rating,
+        ratingCount: featuredProject.ratingCount,
+        completionYear: 0,
+        category: "Bridge",
+        description: featuredProject.description,
+      };
+      setSelectedProject(projectDetail);
+      setProjectModalOpen(true);
+      return;
+    }
+    
     const project = trendingProjects.find(p => p.id === projectId);
     
     if (project) {

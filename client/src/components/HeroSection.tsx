@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Star } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
 
 export interface FeaturedProject {
   id: string;
@@ -18,6 +19,7 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ project, onProjectClick }: HeroSectionProps) {
+  const { user } = useAuth();
   const renderStars = (rating: number) => {
     const stars = [];
     const fullStars = Math.floor(rating);
@@ -121,7 +123,7 @@ export default function HeroSection({ project, onProjectClick }: HeroSectionProp
               }}
               data-testid="button-rate-project"
             >
-              View & Rate Project
+              {user ? "Rate the project" : "Join now to rate the project"}
             </Button>
           </div>
         </div>
