@@ -15,7 +15,7 @@ export default function TrendingSection({
   onViewAll 
 }: TrendingSectionProps) {
   return (
-    <section className="py-12 md:py-16 bg-background">
+    <section id="trending-section" className="py-12 md:py-16 bg-background scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
           <div>
