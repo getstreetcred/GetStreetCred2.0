@@ -70,15 +70,15 @@ export default function ProjectDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg md:max-w-2xl max-h-[90vh] overflow-y-auto p-0">
-        <div className="relative w-full aspect-video overflow-hidden">
+      <DialogContent className="sm:max-w-lg md:max-w-xl max-h-[85vh] overflow-y-auto p-0">
+        <div className="relative w-full h-48 sm:h-56 overflow-hidden">
           <img
             src={project.imageUrl}
             alt={project.name}
             className="w-full h-full object-cover"
             data-testid="img-modal-project"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
           
           {project.category && (
             <Badge
@@ -90,23 +90,29 @@ export default function ProjectDetailModal({
             </Badge>
           )}
 
-          <div className="absolute bottom-0 left-0 right-0 p-6">
+          <div className="absolute bottom-0 left-0 right-0 p-5">
             <h2
-              className="text-2xl md:text-3xl font-bold text-white font-serif mb-2"
+              className="text-xl md:text-2xl font-bold text-white font-serif mb-1"
               data-testid="text-modal-title"
             >
               {project.name}
             </h2>
-            <div className="flex items-center gap-2 text-white/90">
-              <MapPin className="w-4 h-4" />
-              <span className="text-sm md:text-base" data-testid="text-modal-location">
+            <div className="flex items-center gap-2 text-white/90 mb-2">
+              <MapPin className="w-4 h-4 flex-shrink-0" />
+              <span className="text-sm" data-testid="text-modal-location">
                 {project.location}
               </span>
             </div>
+            <p 
+              className="text-white/80 text-sm line-clamp-2"
+              data-testid="text-modal-description"
+            >
+              {project.description}
+            </p>
           </div>
         </div>
 
-        <div className="p-6 space-y-5">
+        <div className="p-5 space-y-4">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-1.5 text-muted-foreground">
               <Calendar className="w-4 h-4" />
@@ -136,19 +142,7 @@ export default function ProjectDetailModal({
             </div>
           </div>
 
-          <div className="bg-card/50 rounded-lg p-4 border border-border">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-              About this Project
-            </h3>
-            <p
-              className="text-foreground leading-relaxed"
-              data-testid="text-modal-description"
-            >
-              {project.description}
-            </p>
-          </div>
-
-          <div className="border-t border-border pt-5">
+          <div className="border-t border-border pt-4">
             <h3 className="text-lg font-semibold mb-4" data-testid="text-rate-heading">
               {hasSubmitted ? "Thanks for your rating!" : "Rate this Project"}
             </h3>
