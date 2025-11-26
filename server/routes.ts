@@ -88,8 +88,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!email || !password) {
         return res.status(400).json({ error: "Email and password required" });
       }
-      const user = await storage.createUser({ email, password });
-      res.status(201).json({ id: user.id, email: user.email });
+      const user = await storage.createUser({ username: email, password });
+      res.status(201).json({ id: user.id, email: user.username });
     } catch (error: any) {
       console.error("Error signing up:", error);
       res.status(400).json({ error: error.message || "Failed to sign up" });
@@ -102,11 +102,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!email || !password) {
         return res.status(400).json({ error: "Email and password required" });
       }
-      const user = await storage.getUserByEmail(email);
+      const user = await storage.getUserByUsername(email);
       if (!user || user.password !== password) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
-      res.json({ id: user.id, email: user.email });
+      res.json({ id: user.id, email: user.username });
     } catch (error) {
       console.error("Error signing in:", error);
       res.status(400).json({ error: "Failed to sign in" });
