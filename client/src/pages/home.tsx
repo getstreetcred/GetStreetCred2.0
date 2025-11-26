@@ -101,6 +101,7 @@ export default function Home() {
   const [projectModalOpen, setProjectModalOpen] = useState(false);
   const [addProjectModalOpen, setAddProjectModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<any>(null);
+  const [scrollToRating, setScrollToRating] = useState(false);
 
   // Fetch projects from API
   const { data: apiProjects = [] } = useQuery({
@@ -157,8 +158,9 @@ export default function Home() {
     setAuthModalOpen(true);
   };
 
-  const handleProjectClick = (projectId: string) => {
+  const handleProjectClick = (projectId: string, shouldScrollToRating: boolean = false) => {
     console.log(`Opening project: ${projectId}`);
+    setScrollToRating(shouldScrollToRating);
     
     // Check if it's the featured project
     if (projectId === featuredProject.id) {
@@ -259,7 +261,7 @@ export default function Home() {
       <main className="pt-16 md:pt-18">
         <HeroSection
           project={featuredProject}
-          onProjectClick={() => handleProjectClick(featuredProject.id)}
+          onProjectClick={handleProjectClick}
           onButtonClick={handleJoinNow}
         />
 
@@ -294,6 +296,7 @@ export default function Home() {
         onSubmitRating={handleSubmitRating}
         onEdit={handleEditProject}
         onDelete={handleDeleteProject}
+        scrollToRating={scrollToRating}
       />
 
       <AddProjectModal
