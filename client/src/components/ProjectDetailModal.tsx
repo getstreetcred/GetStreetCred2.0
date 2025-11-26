@@ -49,8 +49,16 @@ export default function ProjectDetailModal({
   useEffect(() => {
     if (open && scrollToRating && ratingRef.current && scrollContainerRef.current) {
       setTimeout(() => {
-        ratingRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 100);
+        const container = scrollContainerRef.current;
+        const target = ratingRef.current;
+        if (container && target) {
+          const offsetTop = target.offsetTop;
+          container.scrollTo({
+            top: offsetTop - 100,
+            behavior: "smooth"
+          });
+        }
+      }, 150);
     }
   }, [open, scrollToRating]);
 
