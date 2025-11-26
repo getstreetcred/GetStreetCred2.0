@@ -70,80 +70,95 @@ export default function ProjectDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg md:max-w-xl max-h-[85vh] overflow-y-auto p-0">
-        <div className="relative w-full h-48 sm:h-56 overflow-hidden">
+      <DialogContent className="sm:max-w-lg md:max-w-xl max-h-[85vh] p-0 flex flex-col overflow-hidden">
+        <div className="relative w-full h-52 sm:h-64 flex-shrink-0">
           <img
             src={project.imageUrl}
             alt={project.name}
             className="w-full h-full object-cover"
             data-testid="img-modal-project"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-          
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {project.category && (
             <Badge
-              variant="secondary"
-              className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm text-white border-0"
+              variant="outline"
+              className="border-primary text-primary"
               data-testid="badge-modal-category"
             >
               {project.category}
             </Badge>
           )}
 
-          <div className="absolute bottom-0 left-0 right-0 p-5">
-            <h2
-              className="text-xl md:text-2xl font-bold text-white font-serif mb-1"
-              data-testid="text-modal-title"
-            >
-              {project.name}
-            </h2>
-            <div className="flex items-center gap-2 text-white/90 mb-2">
-              <MapPin className="w-4 h-4 flex-shrink-0" />
-              <span className="text-sm" data-testid="text-modal-location">
-                {project.location}
-              </span>
+          <h2
+            className="text-2xl font-bold font-serif"
+            data-testid="text-modal-title"
+          >
+            {project.name}
+          </h2>
+
+          <div className="space-y-3">
+            <div className="flex items-start gap-3">
+              <Calendar className="w-4 h-4 mt-0.5 text-primary flex-shrink-0" />
+              <div>
+                <p className="text-xs text-muted-foreground">Completed</p>
+                <p className="text-sm font-medium" data-testid="text-modal-year">
+                  {project.completionYear}
+                </p>
+              </div>
             </div>
-            <p 
-              className="text-white/80 text-sm line-clamp-2"
+
+            <div className="flex items-start gap-3">
+              <MapPin className="w-4 h-4 mt-0.5 text-primary flex-shrink-0" />
+              <div>
+                <p className="text-xs text-muted-foreground">Location</p>
+                <p className="text-sm font-medium" data-testid="text-modal-location">
+                  {project.location}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <Users className="w-4 h-4 mt-0.5 text-primary flex-shrink-0" />
+              <div>
+                <p className="text-xs text-muted-foreground">Community Rating</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-0.5">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-4 h-4 ${
+                          i < Math.floor(project.rating)
+                            ? "fill-primary text-primary"
+                            : "text-muted-foreground"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm font-medium" data-testid="text-modal-rating">
+                    {project.rating.toFixed(1)}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    ({formatRatingCount(project.ratingCount)} ratings)
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-2">
+            <h3 className="text-base font-semibold mb-2">About This Project</h3>
+            <p
+              className="text-sm text-muted-foreground leading-relaxed"
               data-testid="text-modal-description"
             >
               {project.description}
             </p>
           </div>
-        </div>
-
-        <div className="p-5 space-y-4">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <Calendar className="w-4 h-4" />
-              <span className="text-sm" data-testid="text-modal-year">
-                Completed {project.completionYear}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-0.5">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-4 h-4 ${
-                      i < Math.floor(project.rating)
-                        ? "fill-primary text-primary"
-                        : "text-muted-foreground"
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="font-semibold" data-testid="text-modal-rating">
-                {project.rating.toFixed(1)}
-              </span>
-              <span className="text-sm text-muted-foreground">
-                ({formatRatingCount(project.ratingCount)} ratings)
-              </span>
-            </div>
-          </div>
 
           <div className="border-t border-border pt-4">
-            <h3 className="text-lg font-semibold mb-4" data-testid="text-rate-heading">
+            <h3 className="text-base font-semibold mb-3" data-testid="text-rate-heading">
               {hasSubmitted ? "Thanks for your rating!" : "Rate this Project"}
             </h3>
 
@@ -153,7 +168,7 @@ export default function ProjectDetailModal({
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`w-6 h-6 ${
+                      className={`w-5 h-5 ${
                         i < userRating
                           ? "fill-primary text-primary"
                           : "text-muted-foreground"
@@ -161,20 +176,20 @@ export default function ProjectDetailModal({
                     />
                   ))}
                 </div>
-                <span className="text-foreground font-medium">
+                <span className="text-foreground font-medium text-sm">
                   You rated this {userRating} star{userRating !== 1 ? "s" : ""}
                 </span>
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="flex items-center gap-3">
                   <span className="text-sm text-muted-foreground">Your rating:</span>
                   <div className="flex items-center gap-1">
                     {[...Array(5)].map((_, i) => (
                       <button
                         key={i}
                         type="button"
-                        className="p-1 transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary rounded"
+                        className="p-0.5 transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary rounded"
                         onMouseEnter={() => setHoverRating(i + 1)}
                         onMouseLeave={() => setHoverRating(0)}
                         onClick={() => setUserRating(i + 1)}
@@ -182,7 +197,7 @@ export default function ProjectDetailModal({
                         aria-label={`Rate ${i + 1} stars`}
                       >
                         <Star
-                          className={`w-8 h-8 transition-colors ${
+                          className={`w-7 h-7 transition-colors ${
                             i < displayRating
                               ? "fill-primary text-primary"
                               : "text-muted-foreground hover:text-primary/50"
@@ -192,7 +207,7 @@ export default function ProjectDetailModal({
                     ))}
                   </div>
                   {displayRating > 0 && (
-                    <span className="text-lg font-medium text-primary">
+                    <span className="text-sm font-medium text-primary">
                       {displayRating} star{displayRating !== 1 ? "s" : ""}
                     </span>
                   )}
@@ -202,7 +217,7 @@ export default function ProjectDetailModal({
                   placeholder="Share your thoughts about this project (optional)"
                   value={review}
                   onChange={(e) => setReview(e.target.value)}
-                  className="resize-none"
+                  className="resize-none text-sm"
                   rows={3}
                   data-testid="input-review"
                 />
