@@ -2,8 +2,6 @@ import { useState } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -72,91 +70,91 @@ export default function ProjectDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg md:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="relative w-full aspect-video rounded-lg overflow-hidden mb-4">
+      <DialogContent className="sm:max-w-lg md:max-w-2xl max-h-[90vh] overflow-y-auto p-0">
+        <div className="relative w-full aspect-video overflow-hidden">
           <img
             src={project.imageUrl}
             alt={project.name}
             className="w-full h-full object-cover"
             data-testid="img-modal-project"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          
           {project.category && (
             <Badge
               variant="secondary"
-              className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white border-0"
+              className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm text-white border-0"
               data-testid="badge-modal-category"
             >
               {project.category}
             </Badge>
           )}
-        </div>
 
-        <DialogHeader>
-          <DialogTitle
-            className="text-2xl font-bold font-serif"
-            data-testid="text-modal-title"
-          >
-            {project.name}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
-            <div className="flex items-center gap-1.5">
+          <div className="absolute bottom-0 left-0 right-0 p-6">
+            <h2
+              className="text-2xl md:text-3xl font-bold text-white font-serif mb-2"
+              data-testid="text-modal-title"
+            >
+              {project.name}
+            </h2>
+            <div className="flex items-center gap-2 text-white/90">
               <MapPin className="w-4 h-4" />
-              <span className="text-sm" data-testid="text-modal-location">
+              <span className="text-sm md:text-base" data-testid="text-modal-location">
                 {project.location}
               </span>
             </div>
-            <div className="flex items-center gap-1.5">
+          </div>
+        </div>
+
+        <div className="p-6 space-y-5">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-1.5 text-muted-foreground">
               <Calendar className="w-4 h-4" />
               <span className="text-sm" data-testid="text-modal-year">
                 Completed {project.completionYear}
               </span>
             </div>
-          </div>
-
-          <div className="flex items-center gap-3 p-3 bg-card rounded-lg border border-border">
-            <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className={`w-5 h-5 ${
-                    i < Math.floor(project.rating)
-                      ? "fill-primary text-primary"
-                      : "text-muted-foreground"
-                  }`}
-                />
-              ))}
-            </div>
-            <span
-              className="text-lg font-semibold"
-              data-testid="text-modal-rating"
-            >
-              {project.rating.toFixed(1)}
-            </span>
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <Users className="w-4 h-4" />
-              <span className="text-sm">
-                {formatRatingCount(project.ratingCount)} ratings
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`w-4 h-4 ${
+                      i < Math.floor(project.rating)
+                        ? "fill-primary text-primary"
+                        : "text-muted-foreground"
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="font-semibold" data-testid="text-modal-rating">
+                {project.rating.toFixed(1)}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                ({formatRatingCount(project.ratingCount)} ratings)
               </span>
             </div>
           </div>
 
-          <p
-            className="text-foreground/80 leading-relaxed"
-            data-testid="text-modal-description"
-          >
-            {project.description}
-          </p>
+          <div className="bg-card/50 rounded-lg p-4 border border-border">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+              About this Project
+            </h3>
+            <p
+              className="text-foreground leading-relaxed"
+              data-testid="text-modal-description"
+            >
+              {project.description}
+            </p>
+          </div>
 
-          <div className="border-t border-border pt-4 mt-4">
-            <h4 className="font-semibold mb-3" data-testid="text-rate-heading">
-              {hasSubmitted ? "Thanks for your rating!" : "Rate this project"}
-            </h4>
+          <div className="border-t border-border pt-5">
+            <h3 className="text-lg font-semibold mb-4" data-testid="text-rate-heading">
+              {hasSubmitted ? "Thanks for your rating!" : "Rate this Project"}
+            </h3>
 
             {hasSubmitted ? (
-              <div className="flex items-center gap-2 p-4 bg-primary/10 rounded-lg border border-primary/20">
+              <div className="flex items-center gap-3 p-4 bg-primary/10 rounded-lg border border-primary/20">
                 <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => (
                     <Star
@@ -175,7 +173,8 @@ export default function ProjectDetailModal({
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <span className="text-sm text-muted-foreground">Your rating:</span>
                   <div className="flex items-center gap-1">
                     {[...Array(5)].map((_, i) => (
                       <button
@@ -199,7 +198,7 @@ export default function ProjectDetailModal({
                     ))}
                   </div>
                   {displayRating > 0 && (
-                    <span className="text-lg font-medium text-foreground ml-2">
+                    <span className="text-lg font-medium text-primary">
                       {displayRating} star{displayRating !== 1 ? "s" : ""}
                     </span>
                   )}
