@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -144,6 +144,30 @@ export default function AddProjectModal({
     form.setValue("completionYear", year);
     setYearPickerOpen(false);
   };
+
+  useEffect(() => {
+    if (open && editingProject) {
+      form.reset({
+        name: editingProject.name || "",
+        location: editingProject.location || "",
+        description: editingProject.description || "",
+        imageUrl: editingProject.imageUrl || "",
+        category: editingProject.category || "",
+        completionYear: editingProject.completionYear || new Date().getFullYear(),
+      });
+      setImagePreview(editingProject.imageUrl || null);
+    } else if (open && !editingProject) {
+      form.reset({
+        name: "",
+        location: "",
+        description: "",
+        imageUrl: "",
+        category: "",
+        completionYear: new Date().getFullYear(),
+      });
+      setImagePreview(null);
+    }
+  }, [open, editingProject, form]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
