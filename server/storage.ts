@@ -56,14 +56,22 @@ export class SupabaseStorage implements IStorage {
     const sb = getSupabaseClient();
     if (!sb) throw new Error("Supabase not configured");
     
+    const cleanUsername = username.trim().toLowerCase();
+    console.log(`Querying for username: '${cleanUsername}'`);
+    
     const { data, error } = await sb
       .from("users")
       .select("*")
-      .eq("username", username);
+      .eq("username", cleanUsername);
     
     if (error) {
       console.error("Error fetching user by username:", error);
       return undefined;
+    }
+    
+    console.log(`Query returned ${(data as User[])?.length || 0} results`);
+    if (data && (data as User[]).length > 0) {
+      console.log(`Found users: ${JSON.stringify(data)}`);
     }
     
     const users = (data as User[]) || [];

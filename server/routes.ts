@@ -84,13 +84,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth endpoints
   app.post("/api/auth/signup", async (req, res) => {
     try {
-      const { email, password } = req.body;
+      let { email, password } = req.body;
+      email = email?.trim().toLowerCase();
+      password = password?.trim();
       if (!email || !password) {
         return res.status(400).json({ error: "Email and password required" });
       }
-      console.log(`Sign up attempt for email: ${email}`);
+      console.log(`Sign up attempt for email: '${email}' (length: ${email.length})`);
       const user = await storage.createUser({ username: email, password });
-      console.log(`User created: ${JSON.stringify(user)}`);
+      console.log(`User created with username: '${user.username}'`);
       res.status(201).json({ id: user.id, email: user.username });
     } catch (error: any) {
       console.error("Error signing up:", error);
@@ -100,14 +102,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/signin", async (req, res) => {
     try {
-      const { email, password } = req.body;
+      let { email, password } = req.body;
+      email = email?.trim().toLowerCase();
+      password = password?.trim();
       if (!email || !password) {
         return res.status(400).json({ error: "Email and password required" });
       }
+      console.log(`Sign in attempt for email: '${email}' (length: ${email.length})`);
       const user = await storage.getUserByUsername(email);
-      console.log(`Sign in attempt for email: ${email}`);
       console.log(`User found: ${user ? "yes" : "no"}`);
       if (user) {
+        console.log(`Stored username: '${user.username}', attempting password: '${password}'`);
         console.log(`Password match: ${user.password === password}`);
       }
       if (!user || user.password !== password) {
