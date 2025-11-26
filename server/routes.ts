@@ -78,6 +78,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Seed database with sample projects (admin only)
+  app.post("/api/seed-projects", async (req, res) => {
+    try {
+      const sampleProjects = [
+        {
+          name: "Burj Khalifa",
+          location: "Dubai, UAE",
+          description: "Standing at 828 meters, Burj Khalifa is the world's tallest building. This architectural marvel features 163 floors above ground and took 6 years to construct, showcasing the pinnacle of modern engineering and design.",
+          imageUrl: "https://images.unsplash.com/photo-1505228395891-9a51e7e86e81?w=800",
+          category: "Skyscraper",
+          completionYear: 2010,
+        },
+        {
+          name: "Shanghai Tower",
+          location: "Shanghai, China",
+          description: "Shanghai Tower is a 632-meter supertall skyscraper featuring a unique twisted design that reduces wind loads. It houses offices, hotels, and observation decks with stunning views of the Pudong skyline.",
+          imageUrl: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800",
+          category: "Skyscraper",
+          completionYear: 2015,
+        },
+        {
+          name: "Marina Bay Sands",
+          location: "Singapore",
+          description: "Marina Bay Sands is an integrated resort featuring three 55-story towers topped by a stunning SkyPark. The iconic design includes the world's largest rooftop infinity pool and has become Singapore's most recognizable landmark.",
+          imageUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+          category: "Hotel & Casino",
+          completionYear: 2010,
+        },
+        {
+          name: "Changi Airport Jewel",
+          location: "Singapore",
+          description: "Changi Airport's Jewel is a nature-themed entertainment complex featuring the world's tallest indoor waterfall, the Rain Vortex. It seamlessly blends nature, shopping, and aviation in a stunning glass dome.",
+          imageUrl: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800",
+          category: "Airport",
+          completionYear: 2019,
+        },
+        {
+          name: "Tokyo Skytree",
+          location: "Tokyo, Japan",
+          description: "Tokyo Skytree stands at 634 meters as Japan's tallest structure. This broadcasting tower combines traditional Japanese aesthetics with cutting-edge technology and offers panoramic views of Tokyo from its observation decks.",
+          imageUrl: "https://images.unsplash.com/photo-1540959375944-7049f642e9a0?w=800",
+          category: "Tower",
+          completionYear: 2012,
+        },
+        {
+          name: "Dubai Downtown District",
+          location: "Dubai, UAE",
+          description: "Dubai Downtown is a large-scale urban development centered around the Burj Khalifa. It features world-class shopping, dining, and entertainment venues, representing the height of modern urban planning.",
+          imageUrl: "https://images.unsplash.com/photo-1518162165786-8a9f0b3d9f1b?w=800",
+          category: "Urban Development",
+          completionYear: 2020,
+        },
+        {
+          name: "Hong Kong-Zhuhai-Macau Bridge",
+          location: "Pearl River Delta, China",
+          description: "The Hong Kong-Zhuhai-Macau Bridge is the world's longest sea crossing at 55 kilometers. This engineering masterpiece includes undersea tunnels and artificial islands, reducing travel time between the three cities significantly.",
+          imageUrl: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800",
+          category: "Bridge",
+          completionYear: 2018,
+        },
+      ];
+
+      const insertedProjects = [];
+      for (const project of sampleProjects) {
+        const inserted = await storage.createProject({
+          ...project,
+        });
+        insertedProjects.push(inserted);
+      }
+
+      res.status(201).json({
+        message: `Successfully seeded ${insertedProjects.length} projects`,
+        projects: insertedProjects,
+      });
+    } catch (error) {
+      console.error("Error seeding projects:", error);
+      res.status(500).json({ error: "Failed to seed projects" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
