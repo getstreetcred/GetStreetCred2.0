@@ -241,7 +241,7 @@ export default function Home() {
       <main className="pt-16 md:pt-18">
         <HeroSection
           project={featuredProject}
-          onRateProject={handleRateProject}
+          onProjectClick={() => handleProjectClick(featuredProject.id)}
         />
 
         <CategoryFilter
