@@ -24,7 +24,7 @@ export default function HeroSection({ project, onProjectClick, onButtonClick }: 
 
   const handleButtonClick = () => {
     if (user) {
-      onProjectClick?.(project.id, true);
+      onProjectClick?.(project.id, false);
     } else {
       onButtonClick?.();
     }
