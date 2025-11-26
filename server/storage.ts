@@ -57,19 +57,7 @@ export class SupabaseStorage implements IStorage {
     if (!sb) throw new Error("Supabase not configured");
     
     const cleanUsername = username.trim().toLowerCase();
-    console.log(`Querying for username: '${cleanUsername}'`);
     
-    // First, get ALL users to see what's in the database
-    const { data: allUsers, error: allError } = await sb
-      .from("users")
-      .select("*");
-    
-    console.log(`Total users in database: ${(allUsers as User[])?.length || 0}`);
-    if (allUsers && (allUsers as User[]).length > 0) {
-      console.log(`All users: ${JSON.stringify(allUsers)}`);
-    }
-    
-    // Now query for the specific user
     const { data, error } = await sb
       .from("users")
       .select("*")
@@ -78,11 +66,6 @@ export class SupabaseStorage implements IStorage {
     if (error) {
       console.error("Error fetching user by username:", error);
       return undefined;
-    }
-    
-    console.log(`Query returned ${(data as User[])?.length || 0} results for '${cleanUsername}'`);
-    if (data && (data as User[]).length > 0) {
-      console.log(`Found user: ${JSON.stringify(data[0])}`);
     }
     
     const users = (data as User[]) || [];

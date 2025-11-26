@@ -90,9 +90,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!email || !password) {
         return res.status(400).json({ error: "Email and password required" });
       }
-      console.log(`Sign up attempt for email: '${email}' (length: ${email.length})`);
       const user = await storage.createUser({ username: email, password });
-      console.log(`User created with username: '${user.username}'`);
       res.status(201).json({ id: user.id, email: user.username });
     } catch (error: any) {
       console.error("Error signing up:", error);
@@ -108,13 +106,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!email || !password) {
         return res.status(400).json({ error: "Email and password required" });
       }
-      console.log(`Sign in attempt for email: '${email}' (length: ${email.length})`);
       const user = await storage.getUserByUsername(email);
-      console.log(`User found: ${user ? "yes" : "no"}`);
-      if (user) {
-        console.log(`Stored username: '${user.username}', attempting password: '${password}'`);
-        console.log(`Password match: ${user.password === password}`);
-      }
       if (!user || user.password !== password) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
