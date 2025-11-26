@@ -81,25 +81,32 @@ export default function ProjectDetailModal({
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
-          {project.category && (
-            <Badge
-              variant="outline"
-              className="border-primary text-primary"
-              data-testid="badge-modal-category"
-            >
-              {project.category}
-            </Badge>
-          )}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Project</p>
+              <h2
+                className="text-xl font-bold font-serif"
+                data-testid="text-modal-title"
+              >
+                {project.name}
+              </h2>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground mb-1">Type</p>
+              {project.category && (
+                <Badge
+                  variant="outline"
+                  className="border-primary text-primary"
+                  data-testid="badge-modal-category"
+                >
+                  {project.category}
+                </Badge>
+              )}
+            </div>
+          </div>
 
-          <h2
-            className="text-2xl font-bold font-serif"
-            data-testid="text-modal-title"
-          >
-            {project.name}
-          </h2>
-
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-start gap-2">
               <Calendar className="w-4 h-4 mt-0.5 text-primary flex-shrink-0" />
               <div>
                 <p className="text-xs text-muted-foreground">Completed</p>
@@ -108,43 +115,36 @@ export default function ProjectDetailModal({
                 </p>
               </div>
             </div>
-
-            <div className="flex items-start gap-3">
-              <MapPin className="w-4 h-4 mt-0.5 text-primary flex-shrink-0" />
+            <div className="flex items-start gap-2 justify-end text-right">
               <div>
                 <p className="text-xs text-muted-foreground">Location</p>
                 <p className="text-sm font-medium" data-testid="text-modal-location">
                   {project.location}
                 </p>
               </div>
+              <MapPin className="w-4 h-4 mt-0.5 text-primary flex-shrink-0" />
             </div>
+          </div>
 
-            <div className="flex items-start gap-3">
-              <Users className="w-4 h-4 mt-0.5 text-primary flex-shrink-0" />
-              <div>
-                <p className="text-xs text-muted-foreground">Community Rating</p>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-0.5">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-4 h-4 ${
-                          i < Math.floor(project.rating)
-                            ? "fill-primary text-primary"
-                            : "text-muted-foreground"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-sm font-medium" data-testid="text-modal-rating">
-                    {project.rating.toFixed(1)}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    ({formatRatingCount(project.ratingCount)} ratings)
-                  </span>
-                </div>
-              </div>
+          <div className="flex items-center gap-3 pt-2">
+            <div className="flex items-center gap-0.5">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className={`w-4 h-4 ${
+                    i < Math.floor(project.rating)
+                      ? "fill-primary text-primary"
+                      : "text-muted-foreground"
+                  }`}
+                />
+              ))}
             </div>
+            <span className="text-sm font-medium" data-testid="text-modal-rating">
+              {project.rating.toFixed(1)}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              ({formatRatingCount(project.ratingCount)} ratings)
+            </span>
           </div>
 
           <div className="pt-2">
