@@ -72,7 +72,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertRatingSchema.parse(req.body);
       const rating = await storage.submitRating(validatedData);
-      res.status(201).json(rating);
+      // Fetch updated project to return latest rating data
+      const updatedProject = await storage.getProjectById(validatedData.projectId);
+      res.status(201).json({ rating, updatedProject });
     } catch (error) {
       console.error("Error submitting rating:", error);
       res.status(400).json({ error: "Failed to submit rating" });

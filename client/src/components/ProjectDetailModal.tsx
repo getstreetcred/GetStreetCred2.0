@@ -51,12 +51,35 @@ export default function ProjectDetailModal({
     return count.toString();
   };
 
-  const handleSubmitRating = () => {
+  const handleSubmitRating = async () => {
     if (userRating > 0) {
-      console.log(`Submitting rating for ${project.id}: ${userRating} stars`);
-      console.log(`Review: ${review}`);
-      onSubmitRating?.(project.id, userRating, review);
-      setHasSubmitted(true);
+      try {
+        // Submit rating to backend
+        const response = await fetch("/api/ratings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            projectId: project.id,
+            userId: "user-id-placeholder", // TODO: Replace with actual user ID
+            rating: userRating,
+            review: review || null,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to submit rating");
+        }
+
+        const data = await response.json();
+        console.log(`Rating submitted for ${project.id}: ${userRating} stars`);
+        console.log(`Review: ${review}`);
+        
+        // Call the callback with updated project data
+        onSubmitRating?.(project.id, userRating, review, data.updatedProject);
+        setHasSubmitted(true);
+      } catch (error) {
+        console.error("Error submitting rating:", error);
+      }
     }
   };
 

@@ -196,17 +196,50 @@ export class SupabaseStorage implements IStorage {
     const sb = getSupabaseClient();
     if (!sb) throw new Error("Supabase not configured");
     
-    const { data, error } = await sb
+    // Insert the rating
+    const { data: ratingData, error: ratingError } = await sb
       .from("ratings")
       .insert([rating])
       .select()
       .single();
     
-    if (error) {
-      console.error("Error submitting rating:", error);
-      throw error;
+    if (ratingError) {
+      console.error("Error submitting rating:", ratingError);
+      throw ratingError;
     }
-    return data as Rating;
+
+    // Fetch all ratings for this project to calculate average
+    const { data: allRatings, error: ratingsError } = await sb
+      .from("ratings")
+      .select("rating")
+      .eq("project_id", rating.projectId);
+    
+    if (ratingsError) {
+      console.error("Error fetching ratings for aggregation:", ratingsError);
+      throw ratingsError;
+    }
+
+    // Calculate average rating
+    const ratings = (allRatings as { rating: number }[]) || [];
+    const averageRating = ratings.length > 0
+      ? (ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length).toFixed(1)
+      : "0";
+
+    // Update project with new average rating and count
+    const { error: updateError } = await sb
+      .from("projects")
+      .update({
+        rating: averageRating,
+        rating_count: ratings.length,
+      })
+      .eq("id", rating.projectId);
+    
+    if (updateError) {
+      console.error("Error updating project rating:", updateError);
+      throw updateError;
+    }
+
+    return ratingData as Rating;
   }
 
   async getRatingsForProject(projectId: string): Promise<Rating[]> {

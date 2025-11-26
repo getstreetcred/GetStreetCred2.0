@@ -179,11 +179,13 @@ export default function Home() {
     }
   };
 
-  const handleSubmitRating = (projectId: string, rating: number, review?: string) => {
+  const handleSubmitRating = (projectId: string, rating: number, review?: string, updatedProject?: any) => {
     console.log(`Rating submitted for ${projectId}: ${rating} stars`);
     if (review) {
       console.log(`Review: ${review}`);
     }
+    // Refresh projects to show updated ratings
+    queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
   };
 
   const handleRateProject = (projectId: string) => {
