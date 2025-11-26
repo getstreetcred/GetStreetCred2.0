@@ -59,14 +59,18 @@ export class SupabaseStorage implements IStorage {
     const { data, error } = await sb
       .from("users")
       .select("*")
-      .eq("username", username)
-      .single();
+      .eq("username", username);
     
     if (error) {
       console.error("Error fetching user by username:", error);
       return undefined;
     }
-    return data as User;
+    
+    const users = (data as User[]) || [];
+    if (users.length === 0) {
+      return undefined;
+    }
+    return users[0];
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
