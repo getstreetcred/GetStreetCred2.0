@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +27,7 @@ interface ProjectDetailModalProps {
   onSubmitRating?: (projectId: string, rating: number, review?: string) => void;
   onEdit?: (projectId: string) => void;
   onDelete?: (projectId: string) => void;
+  scrollToRating?: boolean;
 }
 
 export default function ProjectDetailModal({
@@ -36,11 +37,22 @@ export default function ProjectDetailModal({
   onSubmitRating,
   onEdit,
   onDelete,
+  scrollToRating = false,
 }: ProjectDetailModalProps) {
   const [userRating, setUserRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [review, setReview] = useState("");
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const ratingRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (open && scrollToRating && ratingRef.current && scrollContainerRef.current) {
+      setTimeout(() => {
+        ratingRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    }
+  }, [open, scrollToRating]);
 
   if (!project) return null;
 
@@ -130,7 +142,7 @@ export default function ProjectDetailModal({
           />
         </div>
 
-        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+        <div className="flex-1 overflow-y-auto p-5 space-y-4" ref={scrollContainerRef}>
           {project.category && (
             <Badge
               variant="outline"
@@ -202,7 +214,7 @@ export default function ProjectDetailModal({
             </p>
           </div>
 
-          <div className="border-t border-border pt-4">
+          <div className="border-t border-border pt-4" ref={ratingRef}>
             <h3 className="text-base font-semibold mb-3" data-testid="text-rate-heading">
               {hasSubmitted ? "Thanks for your rating!" : "Rate this Project"}
             </h3>

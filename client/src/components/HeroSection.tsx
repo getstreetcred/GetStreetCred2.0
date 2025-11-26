@@ -15,7 +15,7 @@ export interface FeaturedProject {
 
 interface HeroSectionProps {
   project: FeaturedProject;
-  onProjectClick?: (projectId: string) => void;
+  onProjectClick?: (projectId: string, scrollToRating?: boolean) => void;
   onButtonClick?: () => void;
 }
 
@@ -24,7 +24,7 @@ export default function HeroSection({ project, onProjectClick, onButtonClick }: 
 
   const handleButtonClick = () => {
     if (user) {
-      onProjectClick?.(project.id);
+      onProjectClick?.(project.id, true);
     } else {
       onButtonClick?.();
     }
@@ -74,7 +74,7 @@ export default function HeroSection({ project, onProjectClick, onButtonClick }: 
         <div className="flex flex-col md:flex-row items-start gap-6 md:gap-10">
           <div 
             className="hidden md:block w-40 h-52 border-4 border-primary rounded-lg overflow-hidden shadow-xl flex-shrink-0 cursor-pointer hover-elevate"
-            onClick={() => onProjectClick?.(project.id)}
+            onClick={() => onProjectClick?.(project.id, false)}
             data-testid="hero-thumbnail-clickable"
           >
             <img
@@ -96,7 +96,7 @@ export default function HeroSection({ project, onProjectClick, onButtonClick }: 
 
             <h1 
               className="text-4xl md:text-5xl lg:text-6xl font-bold text-white font-serif tracking-tight cursor-pointer hover-elevate"
-              onClick={() => onProjectClick?.(project.id)}
+              onClick={() => onProjectClick?.(project.id, false)}
               data-testid="text-project-name"
             >
               {project.name}
@@ -111,7 +111,7 @@ export default function HeroSection({ project, onProjectClick, onButtonClick }: 
 
             <p 
               className="text-white/80 text-sm md:text-base leading-relaxed cursor-pointer hover-elevate"
-              onClick={() => onProjectClick?.(project.id)}
+              onClick={() => onProjectClick?.(project.id, false)}
               data-testid="text-project-description"
             >
               {project.description}
