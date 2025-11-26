@@ -81,6 +81,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Auth endpoints
+  app.post("/api/auth/signup", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      if (!username || !password) {
+        return res.status(400).json({ error: "Username and password required" });
+      }
+      const user = await storage.createUser({ username, password });
+      res.status(201).json({ id: user.id, username: user.username });
+    } catch (error: any) {
+      console.error("Error signing up:", error);
+      res.status(400).json({ error: error.message || "Failed to sign up" });
+    }
+  });
+
+  app.post("/api/auth/signin", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      if (!username || !password) {
+        return res.status(400).json({ error: "Username and password required" });
+      }
+      const user = await storage.getUserByUsername(username);
+      if (!user || user.password !== password) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+      res.json({ id: user.id, username: user.username });
+    } catch (error) {
+      console.error("Error signing in:", error);
+      res.status(400).json({ error: "Failed to sign in" });
+    }
+  });
+
+  app.get("/api/auth/me", async (req, res) => {
+    try {
+      // For now, return null since we don't have session management
+      res.json(null);
+    } catch (error) {
+      res.status(400).json({ error: "Failed to get user" });
+    }
+  });
+
   // Get ratings for a project
   app.get("/api/projects/:id/ratings", async (req, res) => {
     try {

@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Navigation, Mail, Lock, User } from "lucide-react";
 import { SiGoogle, SiGithub } from "react-icons/si";
+import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuthModalProps {
   open: boolean;
@@ -24,28 +26,86 @@ export default function AuthModal({
   defaultTab = "signin",
 }: AuthModalProps) {
   const [activeTab, setActiveTab] = useState(defaultTab);
-  const [signInData, setSignInData] = useState({ email: "", password: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [signInData, setSignInData] = useState({ username: "", password: "" });
   const [signUpData, setSignUpData] = useState({
-    name: "",
-    email: "",
+    username: "",
     password: "",
+    confirmPassword: "",
   });
+  const { signin, signup } = useAuth();
+  const { toast } = useToast();
 
-  const handleSignIn = (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Sign in with:", signInData);
-    onOpenChange(false);
+    if (!signInData.username || !signInData.password) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await signin(signInData.username, signInData.password);
+      toast({
+        title: "Success",
+        description: "Signed in successfully",
+      });
+      setSignInData({ username: "", password: "" });
+      onOpenChange(false);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to sign in",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Sign up with:", signUpData);
-    onOpenChange(false);
+    if (!signUpData.username || !signUpData.password || !signUpData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (signUpData.password !== signUpData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await signup(signUpData.username, signUpData.password);
+      toast({
+        title: "Success",
+        description: "Account created successfully",
+      });
+      setSignUpData({ username: "", password: "", confirmPassword: "" });
+      onOpenChange(false);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to sign up",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSocialLogin = (provider: string) => {
     console.log(`Login with ${provider}`);
-    onOpenChange(false);
   };
 
   return (
@@ -84,19 +144,20 @@ export default function AuthModal({
           <TabsContent value="signin" className="mt-4">
             <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="signin-email">Email</Label>
+                <Label htmlFor="signin-username">Username</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    id="signin-email"
-                    type="email"
-                    placeholder="you@example.com"
+                    id="signin-username"
+                    type="text"
+                    placeholder="your_username"
                     className="pl-10"
-                    value={signInData.email}
+                    value={signInData.username}
                     onChange={(e) =>
-                      setSignInData({ ...signInData, email: e.target.value })
+                      setSignInData({ ...signInData, username: e.target.value })
                     }
-                    data-testid="input-signin-email"
+                    data-testid="input-signin-username"
+                    disabled={isSubmitting}
                   />
                 </div>
               </div>
@@ -115,6 +176,7 @@ export default function AuthModal({
                       setSignInData({ ...signInData, password: e.target.value })
                     }
                     data-testid="input-signin-password"
+                    disabled={isSubmitting}
                   />
                 </div>
               </div>
@@ -123,8 +185,9 @@ export default function AuthModal({
                 type="submit"
                 className="w-full"
                 data-testid="button-submit-signin"
+                disabled={isSubmitting}
               >
-                Sign In
+                {isSubmitting ? "Signing in..." : "Sign In"}
               </Button>
             </form>
           </TabsContent>
@@ -132,37 +195,20 @@ export default function AuthModal({
           <TabsContent value="signup" className="mt-4">
             <form onSubmit={handleSignUp} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="signup-name">Full Name</Label>
+                <Label htmlFor="signup-username">Username</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    id="signup-name"
+                    id="signup-username"
                     type="text"
-                    placeholder="John Doe"
+                    placeholder="your_username"
                     className="pl-10"
-                    value={signUpData.name}
+                    value={signUpData.username}
                     onChange={(e) =>
-                      setSignUpData({ ...signUpData, name: e.target.value })
+                      setSignUpData({ ...signUpData, username: e.target.value })
                     }
-                    data-testid="input-signup-name"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="signup-email">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    className="pl-10"
-                    value={signUpData.email}
-                    onChange={(e) =>
-                      setSignUpData({ ...signUpData, email: e.target.value })
-                    }
-                    data-testid="input-signup-email"
+                    data-testid="input-signup-username"
+                    disabled={isSubmitting}
                   />
                 </div>
               </div>
@@ -184,6 +230,29 @@ export default function AuthModal({
                       })
                     }
                     data-testid="input-signup-password"
+                    disabled={isSubmitting}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="signup-confirm-password">Confirm Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="signup-confirm-password"
+                    type="password"
+                    placeholder="Confirm your password"
+                    className="pl-10"
+                    value={signUpData.confirmPassword}
+                    onChange={(e) =>
+                      setSignUpData({
+                        ...signUpData,
+                        confirmPassword: e.target.value,
+                      })
+                    }
+                    data-testid="input-signup-confirm-password"
+                    disabled={isSubmitting}
                   />
                 </div>
               </div>
@@ -192,8 +261,9 @@ export default function AuthModal({
                 type="submit"
                 className="w-full"
                 data-testid="button-submit-signup"
+                disabled={isSubmitting}
               >
-                Create Account
+                {isSubmitting ? "Creating account..." : "Create Account"}
               </Button>
             </form>
           </TabsContent>
