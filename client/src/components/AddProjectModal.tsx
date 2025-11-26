@@ -21,6 +21,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertProjectSchema } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
+import { Upload } from "lucide-react";
 
 interface AddProjectModalProps {
   open: boolean;
@@ -46,6 +47,8 @@ export default function AddProjectModal({
   onProjectAdded,
 }: AddProjectModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const { toast } = useToast();
 
   const form = useForm({
@@ -59,6 +62,20 @@ export default function AddProjectModal({
       completionYear: new Date().getFullYear(),
     },
   });
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setUploadedFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target?.result as string;
+        setImagePreview(dataUrl);
+        form.setValue("imageUrl", dataUrl);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (data: any) => {
     setIsSubmitting(true);
@@ -82,6 +99,8 @@ export default function AddProjectModal({
       });
 
       form.reset();
+      setImagePreview(null);
+      setUploadedFile(null);
       onOpenChange(false);
       onProjectAdded?.();
     } catch (error) {
@@ -93,6 +112,13 @@ export default function AddProjectModal({
       });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const year = parseInt(e.target.value);
+    if (!isNaN(year)) {
+      form.setValue("completionYear", year);
     }
   };
 
@@ -177,11 +203,12 @@ export default function AddProjectModal({
                   <FormLabel>Completion Year</FormLabel>
                   <FormControl>
                     <Input
-                      type="number"
-                      placeholder="e.g., 2010"
+                      type="date"
                       {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value))}
+                      onChange={handleDateChange}
+                      value={`${field.value}-01-01`}
                       data-testid="input-completion-year"
+                      className="cursor-pointer"
                     />
                   </FormControl>
                   <FormMessage />
@@ -192,15 +219,58 @@ export default function AddProjectModal({
             <FormField
               control={form.control}
               name="imageUrl"
-              render={({ field }) => (
+              render={() => (
                 <FormItem>
-                  <FormLabel>Image URL</FormLabel>
+                  <FormLabel>Project Image</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="https://example.com/image.jpg"
-                      {...field}
-                      data-testid="input-image-url"
-                    />
+                    <div className="space-y-3">
+                      <label
+                        htmlFor="image-upload"
+                        className="flex items-center justify-center w-full px-4 py-6 border-2 border-dashed border-border rounded-lg hover:border-primary/50 cursor-pointer transition-colors"
+                        data-testid="image-upload-area"
+                      >
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <Upload className="w-6 h-6 text-muted-foreground" />
+                          <div className="text-sm text-muted-foreground text-center">
+                            <p className="font-medium text-foreground">Click to upload an image</p>
+                            <p className="text-xs">PNG, JPG, GIF up to 10MB</p>
+                          </div>
+                        </div>
+                        <input
+                          id="image-upload"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                          data-testid="input-image-file"
+                        />
+                      </label>
+                      {imagePreview && (
+                        <div className="relative">
+                          <img
+                            src={imagePreview}
+                            alt="Preview"
+                            className="w-full h-40 object-cover rounded-lg"
+                            data-testid="image-preview"
+                          />
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            className="absolute top-2 right-2"
+                            onClick={() => {
+                              setImagePreview(null);
+                              setUploadedFile(null);
+                              form.setValue("imageUrl", "");
+                            }}
+                            data-testid="button-remove-image"
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      )}
+                      {!imagePreview && <p className="text-xs text-muted-foreground">No image selected</p>}
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
