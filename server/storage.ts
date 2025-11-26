@@ -29,6 +29,7 @@ export interface IStorage {
   getProjectsByCategory(category: string): Promise<Project[]>;
   getProjectById(id: string): Promise<Project | undefined>;
   createProject(project: InsertProject): Promise<Project>;
+  updateProject(id: string, project: InsertProject): Promise<Project>;
   submitRating(rating: InsertRating): Promise<Rating>;
   getRatingsForProject(projectId: string): Promise<Rating[]>;
 }
@@ -158,6 +159,34 @@ export class SupabaseStorage implements IStorage {
     
     if (error) {
       console.error("Error creating project:", error);
+      throw error;
+    }
+    return data as Project;
+  }
+
+  async updateProject(id: string, project: InsertProject): Promise<Project> {
+    const sb = getSupabaseClient();
+    if (!sb) throw new Error("Supabase not configured");
+    
+    // Transform camelCase to snake_case for Supabase
+    const projectData = {
+      name: project.name,
+      location: project.location,
+      description: project.description,
+      image_url: project.imageUrl,
+      category: project.category,
+      completion_year: project.completionYear,
+    };
+    
+    const { data, error } = await sb
+      .from("projects")
+      .update(projectData)
+      .eq("id", id)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error("Error updating project:", error);
       throw error;
     }
     return data as Project;

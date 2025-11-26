@@ -54,6 +54,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update project (admin)
+  app.patch("/api/projects/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = insertProjectSchema.parse(req.body);
+      const project = await storage.updateProject(id, validatedData);
+      res.json(project);
+    } catch (error) {
+      console.error("Error updating project:", error);
+      res.status(400).json({ error: "Failed to update project" });
+    }
+  });
+
   // Submit rating for a project
   app.post("/api/ratings", async (req, res) => {
     try {
