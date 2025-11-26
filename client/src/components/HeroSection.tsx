@@ -95,7 +95,8 @@ export default function HeroSection({ project, onProjectClick, onButtonClick }: 
             </Badge>
 
             <h1 
-              className="text-4xl md:text-5xl lg:text-6xl font-bold text-white font-serif tracking-tight"
+              className="text-4xl md:text-5xl lg:text-6xl font-bold text-white font-serif tracking-tight cursor-pointer hover-elevate"
+              onClick={() => onProjectClick?.(project.id)}
               data-testid="text-project-name"
             >
               {project.name}
