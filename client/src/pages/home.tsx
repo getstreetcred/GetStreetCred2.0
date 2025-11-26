@@ -260,6 +260,7 @@ export default function Home() {
         <HeroSection
           project={featuredProject}
           onProjectClick={() => handleProjectClick(featuredProject.id)}
+          onButtonClick={handleJoinNow}
         />
 
         <CategoryFilter

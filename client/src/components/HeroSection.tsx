@@ -16,10 +16,19 @@ export interface FeaturedProject {
 interface HeroSectionProps {
   project: FeaturedProject;
   onProjectClick?: (projectId: string) => void;
+  onButtonClick?: () => void;
 }
 
-export default function HeroSection({ project, onProjectClick }: HeroSectionProps) {
+export default function HeroSection({ project, onProjectClick, onButtonClick }: HeroSectionProps) {
   const { user } = useAuth();
+
+  const handleButtonClick = () => {
+    if (user) {
+      onProjectClick?.(project.id);
+    } else {
+      onButtonClick?.();
+    }
+  };
   const renderStars = (rating: number) => {
     const stars = [];
     const fullStars = Math.floor(rating);
@@ -63,7 +72,11 @@ export default function HeroSection({ project, onProjectClick }: HeroSectionProp
 
       <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center">
         <div className="flex flex-col md:flex-row items-start gap-6 md:gap-10">
-          <div className="hidden md:block w-40 h-52 border-4 border-primary rounded-lg overflow-hidden shadow-xl flex-shrink-0">
+          <div 
+            className="hidden md:block w-40 h-52 border-4 border-primary rounded-lg overflow-hidden shadow-xl flex-shrink-0 cursor-pointer hover-elevate"
+            onClick={() => onProjectClick?.(project.id)}
+            data-testid="hero-thumbnail-clickable"
+          >
             <img
               src={project.imageUrl}
               alt={project.name}
@@ -96,7 +109,8 @@ export default function HeroSection({ project, onProjectClick }: HeroSectionProp
             </div>
 
             <p 
-              className="text-white/80 text-sm md:text-base leading-relaxed"
+              className="text-white/80 text-sm md:text-base leading-relaxed cursor-pointer hover-elevate"
+              onClick={() => onProjectClick?.(project.id)}
               data-testid="text-project-description"
             >
               {project.description}
@@ -117,10 +131,7 @@ export default function HeroSection({ project, onProjectClick }: HeroSectionProp
             <Button
               size="lg"
               className="w-fit mt-2 px-8 bg-black/40 backdrop-blur-md border border-primary text-white"
-              onClick={() => {
-                console.log(`View project: ${project.id}`);
-                onProjectClick?.(project.id);
-              }}
+              onClick={handleButtonClick}
               data-testid="button-rate-project"
             >
               {user ? "Rate the project" : "Join now to rate the project"}
