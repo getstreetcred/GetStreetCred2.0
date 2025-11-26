@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +25,11 @@ export default function AuthModal({
   defaultTab = "signin",
 }: AuthModalProps) {
   const [activeTab, setActiveTab] = useState(defaultTab);
+  
+  // Update activeTab when defaultTab prop changes
+  useEffect(() => {
+    setActiveTab(defaultTab);
+  }, [defaultTab, open]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [signInData, setSignInData] = useState({ email: "", password: "" });
   const [signUpData, setSignUpData] = useState({
