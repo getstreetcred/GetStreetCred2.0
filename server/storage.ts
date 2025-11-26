@@ -196,10 +196,18 @@ export class SupabaseStorage implements IStorage {
     const sb = getSupabaseClient();
     if (!sb) throw new Error("Supabase not configured");
     
+    // Transform camelCase to snake_case for Supabase
+    const ratingData = {
+      project_id: rating.projectId,
+      user_id: rating.userId,
+      rating: rating.rating,
+      review: rating.review || null,
+    };
+    
     // Insert the rating
-    const { data: ratingData, error: ratingError } = await sb
+    const { data: submittedRating, error: ratingError } = await sb
       .from("ratings")
-      .insert([rating])
+      .insert([ratingData])
       .select()
       .single();
     
@@ -239,7 +247,7 @@ export class SupabaseStorage implements IStorage {
       throw updateError;
     }
 
-    return ratingData as Rating;
+    return submittedRating as Rating;
   }
 
   async getRatingsForProject(projectId: string): Promise<Rating[]> {
