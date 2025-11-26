@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Navbar from "@/components/Navbar";
 import HeroSection, { type FeaturedProject } from "@/components/HeroSection";
 import CategoryFilter from "@/components/CategoryFilter";
@@ -9,6 +10,7 @@ import AuthModal from "@/components/AuthModal";
 import ProjectDetailModal, { type ProjectDetail } from "@/components/ProjectDetailModal";
 import AddProjectModal from "@/components/AddProjectModal";
 import { type Project } from "@/components/ProjectCard";
+import { queryClient } from "@/lib/queryClient";
 
 import heroImage from "@assets/stock_images/hong_kong_zhuhai_mac_56c5fcf7.jpg";
 import burjKhalifa from "@assets/stock_images/burj_khalifa_dubai_s_0d086f10.jpg";
@@ -26,7 +28,28 @@ export default function Home() {
   const [projectModalOpen, setProjectModalOpen] = useState(false);
   const [addProjectModalOpen, setAddProjectModalOpen] = useState(false);
 
-  // todo: remove mock functionality - replace with API calls
+  // Fetch projects from API
+  const { data: apiProjects = [] } = useQuery({
+    queryKey: ["/api/projects"],
+    queryFn: async () => {
+      const response = await fetch("/api/projects");
+      if (!response.ok) throw new Error("Failed to fetch projects");
+      const data = await response.json();
+      // Transform snake_case to camelCase
+      return data.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        location: p.location,
+        description: p.description,
+        imageUrl: p.image_url,
+        category: p.category,
+        completionYear: p.completion_year,
+        rating: p.rating ? parseFloat(p.rating) : 0,
+        ratingCount: p.rating_count || 0,
+      }));
+    },
+  });
+
   const featuredProject: FeaturedProject = {
     id: "hzmb-1",
     name: "Hong Kong-Zhuhai-Macau Bridge",
@@ -37,8 +60,8 @@ export default function Home() {
     ratingCount: 2340,
   };
 
-  // todo: remove mock functionality - replace with API calls
-  const trendingProjects: Project[] = [
+  // Combine API projects with mock projects
+  const trendingProjects: Project[] = apiProjects.length > 0 ? apiProjects : [
     {
       id: "burj-1",
       name: "Burj Khalifa",
@@ -101,59 +124,21 @@ export default function Home() {
     },
   ];
 
-  // todo: remove mock functionality - replace with API calls
-  const topRatedProjects: TopProject[] = [
-    {
-      id: "burj-top",
-      rank: 1,
-      name: "Burj Khalifa",
-      location: "Dubai, UAE",
-      imageUrl: burjKhalifa,
-      rating: 4.9,
-      ratingCount: 5420,
-      category: "Skyscraper",
-    },
-    {
-      id: "jewel-top",
-      rank: 2,
-      name: "Changi Airport Jewel",
-      location: "Singapore",
-      imageUrl: changiJewel,
-      rating: 4.9,
-      ratingCount: 2890,
-      category: "Airport",
-    },
-    {
-      id: "hzmb-top",
-      rank: 3,
-      name: "Hong Kong-Zhuhai-Macau Bridge",
-      location: "Pearl River Delta, China",
-      imageUrl: heroImage,
-      rating: 4.8,
-      ratingCount: 2340,
-      category: "Bridge",
-    },
-    {
-      id: "marina-top",
-      rank: 4,
-      name: "Marina Bay Sands",
-      location: "Singapore",
-      imageUrl: marinaBay,
-      rating: 4.8,
-      ratingCount: 4150,
-      category: "Hotel",
-    },
-    {
-      id: "shanghai-top",
-      rank: 5,
-      name: "Shanghai Tower",
-      location: "Shanghai, China",
-      imageUrl: shanghaiTower,
-      rating: 4.7,
-      ratingCount: 3210,
-      category: "Skyscraper",
-    },
-  ];
+  const topRatedProjects: TopProject[] = trendingProjects
+    .slice(0, 5)
+    .map((p, idx) => ({
+      ...p,
+      rank: idx + 1,
+    }));
+
+  const projectDescriptions: Record<string, string> = {
+    "burj-1": "Standing at 828 meters, Burj Khalifa is the world's tallest building. This architectural marvel features 163 floors above ground and took 6 years to construct, showcasing the pinnacle of modern engineering and design.",
+    "shanghai-1": "Shanghai Tower is a 632-meter supertall skyscraper featuring a unique twisted design that reduces wind loads. It houses offices, hotels, and observation decks with stunning views of the Pudong skyline.",
+    "marina-1": "Marina Bay Sands is an integrated resort featuring three 55-story towers topped by a stunning SkyPark. The iconic design includes the world's largest rooftop infinity pool and has become Singapore's most recognizable landmark.",
+    "jewel-1": "Changi Airport's Jewel is a nature-themed entertainment complex featuring the world's tallest indoor waterfall, the Rain Vortex. It seamlessly blends nature, shopping, and aviation in a stunning glass dome.",
+    "skytree-1": "Tokyo Skytree stands at 634 meters as Japan's tallest structure. This broadcasting tower combines traditional Japanese aesthetics with cutting-edge technology and offers panoramic views of Tokyo from its observation decks.",
+    "downtown-1": "Dubai Downtown is a large-scale urban development centered around the Burj Khalifa. It features world-class shopping, dining, and entertainment venues, representing the height of modern urban planning.",
+  };
 
   const handleSignIn = () => {
     setAuthModalTab("signin");
@@ -165,34 +150,10 @@ export default function Home() {
     setAuthModalOpen(true);
   };
 
-  // todo: remove mock functionality - replace with API call
-  const projectDescriptions: Record<string, string> = {
-    "burj-1": "Standing at 828 meters, Burj Khalifa is the world's tallest building. This architectural marvel features 163 floors above ground and took 6 years to construct, showcasing the pinnacle of modern engineering and design.",
-    "shanghai-1": "Shanghai Tower is a 632-meter supertall skyscraper featuring a unique twisted design that reduces wind loads. It houses offices, hotels, and observation decks with stunning views of the Pudong skyline.",
-    "marina-1": "Marina Bay Sands is an integrated resort featuring three 55-story towers topped by a stunning SkyPark. The iconic design includes the world's largest rooftop infinity pool and has become Singapore's most recognizable landmark.",
-    "jewel-1": "Changi Airport's Jewel is a nature-themed entertainment complex featuring the world's tallest indoor waterfall, the Rain Vortex. It seamlessly blends nature, shopping, and aviation in a stunning glass dome.",
-    "skytree-1": "Tokyo Skytree stands at 634 meters as Japan's tallest structure. This broadcasting tower combines traditional Japanese aesthetics with cutting-edge technology and offers panoramic views of Tokyo from its observation decks.",
-    "downtown-1": "Dubai Downtown is a large-scale urban development centered around the Burj Khalifa. It features world-class shopping, dining, and entertainment venues, representing the height of modern urban planning.",
-    "burj-top": "Standing at 828 meters, Burj Khalifa is the world's tallest building. This architectural marvel features 163 floors above ground and took 6 years to construct, showcasing the pinnacle of modern engineering and design.",
-    "jewel-top": "Changi Airport's Jewel is a nature-themed entertainment complex featuring the world's tallest indoor waterfall, the Rain Vortex. It seamlessly blends nature, shopping, and aviation in a stunning glass dome.",
-    "hzmb-top": "The Hong Kong-Zhuhai-Macau Bridge is the world's longest sea crossing at 55 kilometers. This engineering masterpiece includes undersea tunnels and artificial islands, reducing travel time between the three cities significantly.",
-    "marina-top": "Marina Bay Sands is an integrated resort featuring three 55-story towers topped by a stunning SkyPark. The iconic design includes the world's largest rooftop infinity pool and has become Singapore's most recognizable landmark.",
-    "shanghai-top": "Shanghai Tower is a 632-meter supertall skyscraper featuring a unique twisted design that reduces wind loads. It houses offices, hotels, and observation decks with stunning views of the Pudong skyline.",
-  };
-
   const handleProjectClick = (projectId: string) => {
     console.log(`Opening project: ${projectId}`);
     
-    const allProjects = [...trendingProjects, ...topRatedProjects.map(p => ({
-      ...p,
-      completionYear: p.id === "hzmb-top" ? 2018 : 
-                      p.id === "jewel-top" ? 2019 :
-                      p.id === "burj-top" ? 2010 :
-                      p.id === "marina-top" ? 2010 :
-                      p.id === "shanghai-top" ? 2015 : 2020,
-    }))];
-    
-    const project = allProjects.find(p => p.id === projectId);
+    const project = trendingProjects.find(p => p.id === projectId);
     
     if (project) {
       const projectDetail: ProjectDetail = {
@@ -204,7 +165,7 @@ export default function Home() {
         ratingCount: project.ratingCount,
         completionYear: project.completionYear,
         category: project.category,
-        description: projectDescriptions[project.id] || "An impressive modern infrastructure project showcasing innovative engineering and design.",
+        description: project.description || projectDescriptions[project.id] || "An impressive modern infrastructure project showcasing innovative engineering and design.",
       };
       setSelectedProject(projectDetail);
       setProjectModalOpen(true);
@@ -216,7 +177,6 @@ export default function Home() {
     if (review) {
       console.log(`Review: ${review}`);
     }
-    // todo: Send rating to API
   };
 
   const handleRateProject = (projectId: string) => {
@@ -237,8 +197,14 @@ export default function Home() {
     ? topRatedProjects
     : topRatedProjects.filter(project =>
         project.category?.toLowerCase() === selectedCategory.toLowerCase() ||
-        (selectedCategory === "hotel" && project.category === "Hotel")
+        (selectedCategory === "hotel" && project.category?.includes("Hotel"))
       );
+
+  const handleProjectAdded = () => {
+    // Refresh projects from API
+    queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+    setAddProjectModalOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -288,10 +254,7 @@ export default function Home() {
       <AddProjectModal
         open={addProjectModalOpen}
         onOpenChange={setAddProjectModalOpen}
-        onProjectAdded={() => {
-          // Optionally refresh projects here
-          console.log("Project added successfully");
-        }}
+        onProjectAdded={handleProjectAdded}
       />
     </div>
   );
