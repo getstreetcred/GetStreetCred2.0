@@ -6,6 +6,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,7 +26,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertProjectSchema } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
-import { Upload } from "lucide-react";
+import { Upload, Calendar } from "lucide-react";
 
 interface AddProjectModalProps {
   open: boolean;
@@ -49,6 +54,7 @@ export default function AddProjectModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [yearPickerOpen, setYearPickerOpen] = useState(false);
   const { toast } = useToast();
 
   const form = useForm({
@@ -62,6 +68,13 @@ export default function AddProjectModal({
       completionYear: new Date().getFullYear(),
     },
   });
+
+  const currentYear = new Date().getFullYear();
+  const startYear = 1900;
+  const years = Array.from(
+    { length: currentYear - startYear + 1 },
+    (_, i) => startYear + i
+  ).reverse();
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -115,11 +128,9 @@ export default function AddProjectModal({
     }
   };
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const year = parseInt(e.target.value);
-    if (!isNaN(year)) {
-      form.setValue("completionYear", year);
-    }
+  const handleYearSelect = (year: number) => {
+    form.setValue("completionYear", year);
+    setYearPickerOpen(false);
   };
 
   return (
@@ -202,14 +213,41 @@ export default function AddProjectModal({
                 <FormItem>
                   <FormLabel>Completion Year</FormLabel>
                   <FormControl>
-                    <Input
-                      type="date"
-                      {...field}
-                      onChange={handleDateChange}
-                      value={`${field.value}-01-01`}
-                      data-testid="input-completion-year"
-                      className="cursor-pointer"
-                    />
+                    <Popover open={yearPickerOpen} onOpenChange={setYearPickerOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-between"
+                          data-testid="button-year-picker"
+                        >
+                          <span>{field.value || "Select a year"}</span>
+                          <Calendar className="w-4 h-4 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-64 p-0" align="start">
+                        <div className="flex flex-col">
+                          <div className="px-4 py-2 border-b border-border">
+                            <p className="text-sm font-medium">Select Year</p>
+                          </div>
+                          <div className="h-64 overflow-y-auto">
+                            <div className="grid grid-cols-4 gap-1 p-2">
+                              {years.map((year) => (
+                                <Button
+                                  key={year}
+                                  variant={field.value === year ? "default" : "outline"}
+                                  size="sm"
+                                  className="h-8 text-xs"
+                                  onClick={() => handleYearSelect(year)}
+                                  data-testid={`year-option-${year}`}
+                                >
+                                  {year}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
