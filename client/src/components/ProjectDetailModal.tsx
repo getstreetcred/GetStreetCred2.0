@@ -247,7 +247,7 @@ export default function ProjectDetailModal({
 
           <div className="border-t border-border pt-4 flex gap-2">
             <Button
-              variant="outline"
+              variant="secondary"
               className="flex-1"
               onClick={handleEdit}
               data-testid="button-edit-project"
@@ -256,8 +256,8 @@ export default function ProjectDetailModal({
               Edit
             </Button>
             <Button
-              variant="destructive"
-              className="flex-1"
+              variant="secondary"
+              className="flex-1 text-destructive hover:text-destructive"
               onClick={handleDelete}
               data-testid="button-delete-project"
             >
