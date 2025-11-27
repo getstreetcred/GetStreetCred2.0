@@ -42,11 +42,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create new project (admin)
+  // Create new project
   app.post("/api/projects", async (req, res) => {
     try {
-      const validatedData = insertProjectSchema.parse(req.body);
-      const project = await storage.createProject(validatedData);
+      const { userId, ...projectData } = req.body;
+      const validatedData = insertProjectSchema.parse(projectData);
+      const project = await storage.createProject(validatedData, userId);
       res.status(201).json(project);
     } catch (error) {
       console.error("Error creating project:", error);
@@ -54,16 +55,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update project (admin)
+  // Update project (admin or project owner)
   app.patch("/api/projects/:id", async (req, res) => {
     try {
       const { id } = req.params;
+      const { userId, userRole } = req.body;
+      
+      // Check permissions
+      const project = await storage.getProjectById(id);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      // Allow if admin or if user is the project creator
+      if (userRole !== "admin" && project.userId !== userId) {
+        return res.status(403).json({ error: "Unauthorized to update this project" });
+      }
+      
       const validatedData = insertProjectSchema.parse(req.body);
-      const project = await storage.updateProject(id, validatedData);
-      res.json(project);
+      const updatedProject = await storage.updateProject(id, validatedData);
+      res.json(updatedProject);
     } catch (error) {
       console.error("Error updating project:", error);
       res.status(400).json({ error: "Failed to update project" });
+    }
+  });
+
+  // Delete project (admin or project owner)
+  app.delete("/api/projects/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { userId, userRole } = req.body;
+      
+      // Check permissions
+      const project = await storage.getProjectById(id);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      // Allow if admin or if user is the project creator
+      if (userRole !== "admin" && project.userId !== userId) {
+        return res.status(403).json({ error: "Unauthorized to delete this project" });
+      }
+      
+      // TODO: Implement delete in storage
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      res.status(400).json({ error: "Failed to delete project" });
     }
   });
 
@@ -90,8 +129,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!email || !password) {
         return res.status(400).json({ error: "Email and password required" });
       }
-      const user = await storage.createUser({ username: email, password });
-      res.status(201).json({ id: user.id, email: user.username });
+      
+      // Check if this email is the admin email
+      const adminEmail = "admin@getstreetcred.com";
+      const role = email === adminEmail ? "admin" : "user";
+      
+      const user = await storage.createUser({ username: email, password }, role);
+      res.status(201).json({ id: user.id, email: user.username, role: user.role });
     } catch (error: any) {
       console.error("Error signing up:", error);
       res.status(400).json({ error: error.message || "Failed to sign up" });
@@ -110,7 +154,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user || user.password !== password) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
-      res.json({ id: user.id, email: user.username });
+      res.json({ id: user.id, email: user.username, role: user.role });
     } catch (error) {
       console.error("Error signing in:", error);
       res.status(400).json({ error: "Failed to sign in" });

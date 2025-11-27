@@ -7,6 +7,7 @@ export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  role: text("role").default("user").notNull(),
 });
 
 export const projects = pgTable("projects", {
@@ -19,6 +20,7 @@ export const projects = pgTable("projects", {
   completionYear: integer("completion_year").notNull(),
   rating: text("rating").default("0").notNull(),
   ratingCount: integer("rating_count").default(0).notNull(),
+  userId: varchar("user_id"),
   createdAt: timestamp("created_at").default(sql`now()`),
 });
 

@@ -24,11 +24,11 @@ function getSupabaseClient(): SupabaseClient | null {
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  createUser(user: InsertUser, role?: string): Promise<User>;
   getProjects(): Promise<Project[]>;
   getProjectsByCategory(category: string): Promise<Project[]>;
   getProjectById(id: string): Promise<Project | undefined>;
-  createProject(project: InsertProject): Promise<Project>;
+  createProject(project: InsertProject, userId?: string): Promise<Project>;
   updateProject(id: string, project: InsertProject): Promise<Project>;
   submitRating(rating: InsertRating): Promise<Rating>;
   getRatingsForProject(projectId: string): Promise<Rating[]>;
@@ -75,13 +75,14 @@ export class SupabaseStorage implements IStorage {
     return users[0];
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
+  async createUser(insertUser: InsertUser, role: string = "user"): Promise<User> {
     const sb = getSupabaseClient();
     if (!sb) throw new Error("Supabase not configured");
     
+    const userData = { ...insertUser, role };
     const { data, error } = await sb
       .from("users")
-      .insert([insertUser])
+      .insert([userData])
       .select()
       .single();
     
@@ -143,7 +144,7 @@ export class SupabaseStorage implements IStorage {
     return data as Project;
   }
 
-  async createProject(project: InsertProject): Promise<Project> {
+  async createProject(project: InsertProject, userId?: string): Promise<Project> {
     const sb = getSupabaseClient();
     if (!sb) throw new Error("Supabase not configured");
     
@@ -155,6 +156,7 @@ export class SupabaseStorage implements IStorage {
       image_url: project.imageUrl,
       category: project.category,
       completion_year: project.completionYear,
+      ...(userId && { user_id: userId }),
     };
     
     const { data, error } = await sb

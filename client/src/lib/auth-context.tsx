@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 export interface AuthUser {
   id: string;
   email: string;
+  role: "admin" | "user";
 }
 
 interface AuthContextType {
@@ -53,7 +54,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const data = await response.json();
-    setUser(data);
+    setUser({
+      id: data.id,
+      email: data.email,
+      role: data.role || "user"
+    });
   };
 
   const signup = async (email: string, password: string) => {
@@ -69,7 +74,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const data = await response.json();
-    setUser(data);
+    setUser({
+      id: data.id,
+      email: data.email,
+      role: data.role || "user"
+    });
   };
 
   const logout = () => {
