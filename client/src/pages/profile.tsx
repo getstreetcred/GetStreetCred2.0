@@ -12,13 +12,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Edit, Save, X } from "lucide-react";
+import { ArrowLeft, Edit, Save, X, Upload } from "lucide-react";
 import type { Project } from "@/components/ProjectCard";
 
 const profileSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  password: z.string().optional(),
-  profilePictureUrl: z.string().url("Must be a valid URL").optional(),
+  username: z.string().min(1, "Username is required").optional(),
+  password: z.string().min(6, "Password must be at least 6 characters").optional().or(z.literal("")),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -29,6 +28,8 @@ export default function Profile() {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [profilePicPreview, setProfilePicPreview] = useState<string | null>(user?.profilePictureUrl || null);
+  const [profilePicFile, setProfilePicFile] = useState<string | null>(null);
 
   // Redirect to home if not logged in
   useEffect(() => {
@@ -42,9 +43,21 @@ export default function Profile() {
     defaultValues: {
       username: user?.email || "",
       password: "",
-      profilePictureUrl: user?.profilePictureUrl || "",
     },
   });
+
+  const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setProfilePicFile(base64String);
+        setProfilePicPreview(base64String);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Fetch user's projects
   const { data: userProjects = [], isLoading: isLoadingProjects } = useQuery({
@@ -72,17 +85,31 @@ export default function Profile() {
 
   const onSubmit = async (data: ProfileFormData) => {
     if (!user?.id) return;
+    
+    // Check if at least one field is being updated
+    if (!data.username && !data.password && !profilePicFile) {
+      toast({
+        title: "No changes",
+        description: "Please update at least one field",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSaving(true);
     try {
+      const updatePayload: any = {
+        userId: user.id,
+      };
+
+      if (data.username) updatePayload.username = data.username;
+      if (data.password) updatePayload.password = data.password;
+      if (profilePicFile) updatePayload.profilePictureUrl = profilePicFile;
+
       const response = await fetch("/api/user/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: user.id,
-          username: data.username,
-          password: data.password || undefined,
-          profilePictureUrl: data.profilePictureUrl || undefined,
-        }),
+        body: JSON.stringify(updatePayload),
       });
 
       if (!response.ok) {
@@ -100,6 +127,8 @@ export default function Profile() {
       });
       
       setIsEditing(false);
+      setProfilePicFile(null);
+      form.reset();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -183,7 +212,7 @@ export default function Profile() {
                   name="username"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Username / Email</FormLabel>
+                      <FormLabel>Username / Email (Optional)</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -206,7 +235,7 @@ export default function Profile() {
                         <Input
                           {...field}
                           type="password"
-                          placeholder="Leave blank to keep current password"
+                          placeholder="Minimum 6 characters"
                           data-testid="input-password-edit"
                         />
                       </FormControl>
@@ -215,23 +244,36 @@ export default function Profile() {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="profilePictureUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Profile Picture URL</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="Enter image URL"
-                          data-testid="input-profile-pic-edit"
+                <FormItem>
+                  <FormLabel>Profile Picture</FormLabel>
+                  <div className="space-y-3">
+                    {profilePicPreview && (
+                      <div className="w-full h-48 rounded-lg overflow-hidden border border-border">
+                        <img
+                          src={profilePicPreview}
+                          alt="Profile preview"
+                          className="w-full h-full object-cover"
                         />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                      </div>
+                    )}
+                    <div className="flex items-center justify-center">
+                      <label className="flex flex-col items-center justify-center w-full h-20 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-accent transition-colors"
+                        data-testid="button-upload-profile-pic">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <Upload className="w-6 h-6 mb-2 text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground">Click to upload profile picture</p>
+                        </div>
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleProfilePicChange}
+                          data-testid="input-file-profile-pic"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </FormItem>
 
                 <div className="flex gap-3 pt-4">
                   <Button
@@ -247,6 +289,8 @@ export default function Profile() {
                     variant="outline"
                     onClick={() => {
                       setIsEditing(false);
+                      setProfilePicPreview(user?.profilePictureUrl || null);
+                      setProfilePicFile(null);
                       form.reset();
                     }}
                     data-testid="button-cancel-profile"

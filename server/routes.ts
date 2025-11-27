@@ -305,20 +305,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "User not found" });
       }
 
-      const updateData: any = {};
-      if (username) updateData.username = username;
-      if (password) updateData.password = password;
-      if (profilePictureUrl !== undefined) updateData.profilePictureUrl = profilePictureUrl;
-
       const sb = require("@supabase/supabase-js").createClient(
         process.env.SUPABASE_URL,
         process.env.SUPABASE_ANON_KEY
       );
 
       const updatePayload: any = {};
-      if (username) updatePayload.username = username;
-      if (password) updatePayload.password = password;
-      if (profilePictureUrl !== undefined) updatePayload.profile_picture_url = profilePictureUrl;
+      
+      // Only include fields that are being updated
+      if (username !== undefined && username) {
+        updatePayload.username = username;
+      }
+      if (password !== undefined && password) {
+        updatePayload.password = password;
+      }
+      if (profilePictureUrl !== undefined) {
+        updatePayload.profile_picture_url = profilePictureUrl;
+      }
+
+      // If nothing to update, return error
+      if (Object.keys(updatePayload).length === 0) {
+        return res.status(400).json({ error: "No fields to update" });
+      }
 
       const { data: updatedUser, error } = await sb
         .from("users")
