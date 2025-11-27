@@ -99,6 +99,7 @@ export default function Home() {
   const [authModalTab, setAuthModalTab] = useState<"signin" | "signup">("signin");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedLocation, setSelectedLocation] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedProject, setSelectedProject] = useState<ProjectDetail | null>(null);
   const [projectModalOpen, setProjectModalOpen] = useState(false);
   const [addProjectModalOpen, setAddProjectModalOpen] = useState(false);
@@ -226,7 +227,7 @@ export default function Home() {
     new Set(trendingProjects.map(p => p.location))
   ).sort();
 
-  // Filter by category and location
+  // Filter by category, location, and search query
   const filteredTrendingProjects = trendingProjects
     .filter(project => {
       const categoryMatch = selectedCategory === "all" || 
@@ -235,7 +236,11 @@ export default function Home() {
       
       const locationMatch = selectedLocation === "all" || project.location === selectedLocation;
       
-      return categoryMatch && locationMatch;
+      const searchMatch = searchQuery === "" || 
+        project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (project.description || "").toLowerCase().includes(searchQuery.toLowerCase());
+      
+      return categoryMatch && locationMatch && searchMatch;
     });
 
   const filteredTopRatedProjects = filteredTrendingProjects
@@ -290,7 +295,9 @@ export default function Home() {
         <LocationFilter
           locations={uniqueLocations}
           selectedLocation={selectedLocation}
+          searchQuery={searchQuery}
           onSelectLocation={setSelectedLocation}
+          onSearchChange={setSearchQuery}
         />
 
         <CategoryFilter
