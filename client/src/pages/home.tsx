@@ -302,6 +302,13 @@ export default function Home() {
             if (location !== "all") {
               setSelectedCategory("all");
               setSearchQuery("");
+              // Scroll to projects section after location selection
+              setTimeout(() => {
+                const projectsSection = document.getElementById("trending-section");
+                if (projectsSection) {
+                  projectsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+              }, 100);
             }
           }}
           onSearchChange={setSearchQuery}
