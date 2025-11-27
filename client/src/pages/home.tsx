@@ -307,13 +307,11 @@ export default function Home() {
       />
 
       <main className="pt-16 md:pt-18">
-        {featuredProject && (
-          <HeroSection
-            project={featuredProject}
-            onProjectClick={handleProjectClick}
-            onButtonClick={handleJoinNow}
-          />
-        )}
+        <HeroSection
+          project={featuredProject}
+          onProjectClick={handleProjectClick}
+          onButtonClick={handleJoinNow}
+        />
 
         <LocationFilter
           locations={uniqueLocations}

@@ -14,13 +14,17 @@ export interface FeaturedProject {
 }
 
 interface HeroSectionProps {
-  project: FeaturedProject;
+  project: FeaturedProject | null;
   onProjectClick?: (projectId: string, scrollToRating?: boolean) => void;
   onButtonClick?: () => void;
 }
 
 export default function HeroSection({ project, onProjectClick, onButtonClick }: HeroSectionProps) {
   const { user } = useAuth();
+
+  if (!project) {
+    return null;
+  }
 
   const handleButtonClick = () => {
     if (user) {
