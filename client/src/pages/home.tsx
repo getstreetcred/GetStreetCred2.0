@@ -202,6 +202,7 @@ export default function Home() {
         completionYear: project.completionYear,
         category: project.category || "Infrastructure",
         description: project.description || PROJECT_DESCRIPTIONS[project.id] || "An impressive modern infrastructure project showcasing innovative engineering and design.",
+        userId: project.userId,
       };
       setSelectedProject(projectDetail);
       setProjectModalOpen(true);
