@@ -8,15 +8,8 @@ import {
   SheetHeader,
   SheetTitle 
 } from "@/components/ui/sheet";
-import { Navigation, Menu, X, TrendingUp, Award, Plus, LogOut, MapPin } from "lucide-react";
+import { Navigation, Menu, X, TrendingUp, Award, Plus, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 interface NavLink {
   href?: string;
@@ -29,12 +22,9 @@ interface NavbarProps {
   onSignIn?: () => void;
   onJoinNow?: () => void;
   onAddProject?: () => void;
-  locations?: string[];
-  selectedLocation?: string;
-  onSelectLocation?: (location: string) => void;
 }
 
-export default function Navbar({ onSignIn, onJoinNow, onAddProject, locations = [], selectedLocation = "all", onSelectLocation }: NavbarProps) {
+export default function Navbar({ onSignIn, onJoinNow, onAddProject }: NavbarProps) {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
@@ -108,25 +98,6 @@ export default function Navbar({ onSignIn, onJoinNow, onAddProject, locations = 
                 </Button>
               )
             ))}
-            
-            {locations.length > 0 && (
-              <div className="flex items-center gap-2 ml-4 pl-4 border-l border-border">
-                <MapPin className="w-4 h-4 text-muted-foreground" />
-                <Select value={selectedLocation} onValueChange={onSelectLocation}>
-                  <SelectTrigger className="w-40" data-testid="navbar-select-location">
-                    <SelectValue placeholder="Select location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Locations</SelectItem>
-                    {locations.map((loc) => (
-                      <SelectItem key={loc} value={loc}>
-                        {loc}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
           </nav>
 
           <div className="flex items-center gap-2">

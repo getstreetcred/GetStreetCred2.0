@@ -278,9 +278,6 @@ export default function Home() {
         onSignIn={handleSignIn} 
         onJoinNow={handleJoinNow}
         onAddProject={() => setAddProjectModalOpen(true)}
-        locations={uniqueLocations}
-        selectedLocation={selectedLocation}
-        onSelectLocation={setSelectedLocation}
       />
 
       <main className="pt-16 md:pt-18">
