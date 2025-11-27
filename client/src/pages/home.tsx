@@ -274,9 +274,30 @@ export default function Home() {
     }
   };
 
-  const handleDeleteProject = (projectId: string) => {
+  const handleDeleteProject = async (projectId: string) => {
     console.log(`Delete project: ${projectId}`);
-    // TODO: Implement delete functionality
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user?.id,
+          userRole: user?.role,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete project");
+      }
+
+      console.log(`Project deleted: ${projectId}`);
+      // Refresh projects list
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      setProjectModalOpen(false);
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      alert("Failed to delete project. Please try again.");
+    }
   };
 
   return (
