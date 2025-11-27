@@ -311,7 +311,18 @@ export default function Home() {
               }, 100);
             }
           }}
-          onSearchChange={setSearchQuery}
+          onSearchChange={(query) => {
+            setSearchQuery(query);
+            // Scroll to projects section when user searches
+            if (query.trim() !== "") {
+              setTimeout(() => {
+                const projectsSection = document.getElementById("trending-section");
+                if (projectsSection) {
+                  projectsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+              }, 100);
+            }
+          }}
         />
 
         <CategoryFilter
