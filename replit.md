@@ -13,12 +13,13 @@ GetStreetCred is a social platform for discovering, showcasing, and rating moder
 - Routing: Wouter (lightweight React router)
 - State Management: TanStack React Query
 - Backend: Express.js with TypeScript
-- Database: PostgreSQL via Drizzle ORM (configured but minimal schema)
+- Database: PostgreSQL via Supabase
 - Deployment: Replit environment
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Database: Supabase only (no mixing with local PostgreSQL)
 
 ## System Architecture
 
@@ -40,7 +41,7 @@ Preferred communication style: Simple, everyday language.
 - TanStack Query for server state and API data fetching
 - Local component state with React hooks for UI interactions
 - Query client configured with custom fetch wrapper for API requests
-- Credential-based sessions for authentication (configured but not fully implemented)
+- Authentication state managed via context (AuthContext)
 
 **Responsive Layout System**
 - Mobile-first approach using Tailwind breakpoints
@@ -53,14 +54,15 @@ Preferred communication style: Simple, everyday language.
 **Express Server with TypeScript**
 - Development server: Vite dev server with HMR for fast development
 - Production server: Pre-built static assets served via Express
-- Route registration pattern in `/server/routes.ts` (minimal implementation)
+- Route registration pattern in `/server/routes.ts` with API endpoints
+- Request/response transformation: snake_case ↔ camelCase conversion for Supabase compatibility
 - Logging middleware for request/response tracking
 
 **Storage Abstraction Layer**
-- Interface-based storage design (`IStorage`) enables swapping implementations
-- Current implementation: In-memory storage (`MemStorage`) for development
-- Designed to support database storage via Drizzle ORM
-- CRUD methods for user management (getUser, getUserByUsername, createUser)
+- Interface-based storage design (`IStorage`) with Supabase implementation
+- Current implementation: Supabase PostgreSQL client for all data operations
+- CRUD methods for users, projects, and ratings
+- All operations delegated to Supabase cloud database
 
 **Development vs Production Split**
 - `index-dev.ts`: Vite middleware integration for hot module replacement
@@ -69,64 +71,105 @@ Preferred communication style: Simple, everyday language.
 
 ### Data Layer
 
-**Drizzle ORM Integration**
-- PostgreSQL dialect configured via `@neondatabase/serverless` driver
-- Schema definition in `/shared/schema.ts` (currently minimal: users table only)
-- Zod schema validation using `drizzle-zod` for type-safe inserts
-- Migration output directory: `/migrations`
-- Database credentials from `DATABASE_URL` environment variable
+**Supabase PostgreSQL**
+- Direct Supabase client integration via `@supabase/supabase-js`
+- Schema definition in `/shared/schema.ts` with Drizzle ORM types
+- Zod schema validation for type-safe operations
+- Environment variables: `SUPABASE_URL` and `SUPABASE_ANON_KEY`
 
-**Current Schema**
-- `users` table: id (UUID), username (unique), password (hashed - implementation pending)
-- Schema designed for expansion with projects, ratings, reviews, categories
+**Database Schema**
+- `users` table: id (UUID), username (unique), password (plain text), role (user/admin)
+- `projects` table: id (UUID), name, location, description, image_url, category, completion_year, rating, rating_count, user_id (creator), created_at
+- `ratings` table: id (UUID), project_id, user_id, rating (1-5), review (optional), created_at
 
 **Type Safety**
-- TypeScript types inferred from Drizzle schema (`typeof users.$inferSelect`)
+- TypeScript types inferred from Drizzle schema
 - Zod schemas for runtime validation of insert operations
 - Shared types between frontend and backend via `/shared` directory
+- camelCase used in frontend, snake_case in Supabase, automatic conversion in routes
+
+### Authentication & Authorization
+
+**Role-Based Access Control**
+- Admin role: Automatically assigned to accounts with email `admin@getstreetcred.com`
+- User role: Default role for all other accounts
+- Role field stored in users table and returned on signin/signup
+
+**Permissions System**
+- **Admins**: Can edit and delete any project in the system
+- **Regular users**: Can only edit/delete projects they created
+- Permission checks enforced on both frontend (UI) and backend (API)
+- Edit/Delete buttons only visible to authorized users in project detail modal
+
+**Authentication Flow**
+- Email/password signup and signin (no hashing yet, plain text passwords)
+- Auth context maintains user state with id, email, and role
+- Sessions managed on frontend (localStorage/context), no server-side sessions currently
+- API routes verify userId and userRole from request body for permission checks
 
 ### Routing & Navigation
 
 **Client-Side Routing**
 - Wouter for lightweight, hook-based routing
 - Current routes: Home (`/`), 404 fallback
-- Navigation via smooth scrolling to section IDs for single-page experience
+- Navigation via smooth scrolling and modal-based project viewing
 - Link components with test IDs for automated testing
 
 **Server-Side Routing**
-- API routes prefixed with `/api` (convention, not enforced)
-- Catch-all route serves React SPA for client-side routing
-- Static asset serving from Vite build output
+- API routes: `/api/projects`, `/api/ratings`, `/api/auth/*`
+- Request transformation middleware converts camelCase to snake_case for Supabase queries
+- Response transformation converts snake_case from Supabase back to camelCase for frontend
+- Permission checks on PATCH/DELETE project endpoints
 
 ### UI/UX Patterns
 
 **Modal-Based Interactions**
 - Authentication modal with tab switching (sign in/sign up)
-- Project detail modal for ratings and reviews
+- Project detail modal for ratings, reviews, and editing
+- Add/Edit project modal for project creation and modification
 - Radix Dialog primitives for accessible modal behavior
 
 **Category Filtering**
 - Horizontal scrollable category filter bar
-- Categories: Skyscrapers, Bridges, Airports, Railways, Stadiums, Residential
+- Categories: Skyscrapers, Bridges, Airports, Railways, Stadiums, Residential, Hotel & Casino, Tower, Urban Development
 - Icons from lucide-react library
 
 **Rating System**
-- 5-star rating display with half-star support
-- Interactive star selection in project detail modal
+- 5-star rating display with interactive star selection
+- Aggregate rating calculation after each new rating
 - Optional text review submission
+- Only authenticated users can rate projects
 
 **Content Sections**
 - Hero section: Featured project with large imagery and gradient overlays
-- Trending section: Grid of recent/popular projects
+- Trending section: Grid of recent/popular projects with location/category filtering
 - Top-rated section: Ranked list with special styling for top 3 positions
+- Location-based discovery with autocomplete dropdown
+
+**Project Management**
+- Create: Any logged-in user can add new infrastructure projects
+- Edit: Only project creators or admins can edit
+- Delete: Only project creators or admins can delete
+- Edit/Delete buttons only visible to authorized users
+
+## Recent Changes (November 27, 2025)
+
+**Admin System Implementation**
+- Added `role` column to users table (default: "user")
+- Added `user_id` column to projects table to track project creator
+- Implemented admin auto-detection: anyone signing up with `admin@getstreetcred.com` becomes admin
+- Backend permission checks on edit/delete endpoints
+- Frontend permission checks hide edit/delete buttons from unauthorized users
+- Supabase integration: All data stored in Supabase PostgreSQL database
+- Frontend/Backend API data transformation: Supabase uses snake_case, frontend uses camelCase
 
 ## External Dependencies
 
 ### UI Component Libraries
-- **shadcn/ui**: Pre-built accessible components (configured via `components.json`)
-- **Radix UI**: Unstyled, accessible component primitives (20+ primitives installed)
+- **shadcn/ui**: Pre-built accessible components
+- **Radix UI**: Unstyled, accessible component primitives
 - **Lucide React**: Icon library for UI elements
-- **React Icons**: Additional icon sets (SiGoogle, SiGithub, etc.)
+- **React Icons**: Additional icon sets
 
 ### Styling & Design
 - **Tailwind CSS**: Utility-first CSS framework with custom configuration
@@ -141,31 +184,24 @@ Preferred communication style: Simple, everyday language.
 - **Zod**: Runtime type validation
 
 ### Database & Backend
-- **Drizzle ORM**: Type-safe ORM for PostgreSQL
-- **@neondatabase/serverless**: Serverless PostgreSQL driver
-- **drizzle-zod**: Automatic Zod schema generation from Drizzle schemas
-- **connect-pg-simple**: PostgreSQL session store for Express (configured but not active)
+- **Supabase**: Hosted PostgreSQL database and client library
+- **@supabase/supabase-js**: Supabase JavaScript client
+- **drizzle-zod**: Zod schema generation from Drizzle types
 
 ### Development Tools
 - **Vite**: Build tool and dev server
 - **esbuild**: JavaScript bundler for production builds
 - **tsx**: TypeScript execution for development
-- **Replit Plugins**: Cartographer (code mapping), dev banner, error overlay
+- **Replit Plugins**: Cartographer, dev banner, error overlay
 
 ### Utility Libraries
 - **date-fns**: Date manipulation and formatting
 - **embla-carousel-react**: Carousel/slider component
 - **cmdk**: Command palette component
-- **nanoid**: Unique ID generation
-- **Wouter**: Lightweight React router (~1KB)
+- **Wouter**: Lightweight React router
+- **postgres**: PostgreSQL client library for migrations
 
 ### Asset Management
 - Stock images stored in `/attached_assets/stock_images/` for infrastructure projects
 - Images imported directly in components via Vite aliases
-- Custom fonts: DM Sans, Space Grotesk, Fira Code, Geist Mono (loaded via Google Fonts)
-
-### Authentication (Planned)
-- Session-based authentication infrastructure in place
-- Social login UI prepared (Google, GitHub buttons)
-- Password hashing and JWT not yet implemented
-- User schema exists but authentication flow incomplete
+- Custom fonts: DM Sans, Space Grotesk, Fira Code, Geist Mono (Google Fonts)
