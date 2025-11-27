@@ -152,7 +152,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const role = email === adminEmail ? "admin" : "user";
       
       const user = await storage.createUser({ username: email, password }, role);
-      res.status(201).json({ id: user.id, email: user.username, role: user.role });
+      res.status(201).json({ 
+        id: user.id, 
+        email: user.username, 
+        role: user.role,
+        profilePictureUrl: (user as any).profile_picture_url || undefined
+      });
     } catch (error: any) {
       console.error("Error signing up:", error);
       res.status(400).json({ error: error.message || "Failed to sign up" });
@@ -171,7 +176,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user || user.password !== password) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
-      res.json({ id: user.id, email: user.username, role: user.role });
+      res.json({ 
+        id: user.id, 
+        email: user.username, 
+        role: user.role,
+        profilePictureUrl: (user as any).profile_picture_url || undefined
+      });
     } catch (error) {
       console.error("Error signing in:", error);
       res.status(400).json({ error: "Failed to sign in" });
