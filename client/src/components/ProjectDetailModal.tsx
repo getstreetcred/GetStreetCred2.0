@@ -6,7 +6,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { MapPin, Star, Calendar, Users, Trash2, Edit } from "lucide-react";
+import { MapPin, Star, Calendar, Users, Trash2, Edit, Heart } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 
 export interface ProjectDetail {
@@ -31,6 +31,8 @@ interface ProjectDetailModalProps {
   onDelete?: (projectId: string) => void;
   scrollToRating?: boolean;
   onJoinNow?: () => void;
+  onSetFeatured?: (projectId: string) => void;
+  isFeatured?: boolean;
 }
 
 export default function ProjectDetailModal({
@@ -42,6 +44,8 @@ export default function ProjectDetailModal({
   onDelete,
   scrollToRating = false,
   onJoinNow,
+  onSetFeatured,
+  isFeatured = false,
 }: ProjectDetailModalProps) {
   const { user } = useAuth();
   const [userRating, setUserRating] = useState(0);
@@ -330,7 +334,40 @@ export default function ProjectDetailModal({
             )}
           </div>
 
-          {user && (user.role === "admin" || user.id === project.userId) && (
+          {user && user.role === "admin" && (
+            <div className="border-t border-border pt-4 flex flex-col gap-2">
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  className="flex-1"
+                  onClick={handleEdit}
+                  data-testid="button-edit-project"
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit
+                </Button>
+                <Button
+                  variant="secondary"
+                  className="flex-1 text-destructive hover:text-destructive"
+                  onClick={handleDelete}
+                  data-testid="button-delete-project"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
+              <Button
+                variant={isFeatured ? "default" : "outline"}
+                className="w-full"
+                onClick={() => onSetFeatured?.(project.id)}
+                data-testid="button-set-featured"
+              >
+                <Heart className={`w-4 h-4 mr-2 ${isFeatured ? "fill-current" : ""}`} />
+                {isFeatured ? "Remove from Featured" : "Set as Featured"}
+              </Button>
+            </div>
+          )}
+          {user && user.role !== "admin" && user.id === project.userId && (
             <div className="border-t border-border pt-4 flex gap-2">
               <Button
                 variant="secondary"

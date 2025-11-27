@@ -227,6 +227,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get featured project
+  app.get("/api/featured-project", async (req, res) => {
+    try {
+      const project = await storage.getFeaturedProject();
+      if (!project) {
+        return res.status(404).json({ error: "No featured project" });
+      }
+      res.json(transformProject(project));
+    } catch (error) {
+      console.error("Error fetching featured project:", error);
+      res.status(500).json({ error: "Failed to fetch featured project" });
+    }
+  });
+
+  // Set featured project (admin only)
+  app.patch("/api/projects/:id/feature", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { userRole } = req.body;
+      
+      if (userRole !== "admin") {
+        return res.status(403).json({ error: "Only admins can set featured projects" });
+      }
+      
+      const project = await storage.getProjectById(id);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      await storage.setFeaturedProject(id);
+      res.json({ success: true, message: "Project set as featured" });
+    } catch (error) {
+      console.error("Error setting featured project:", error);
+      res.status(400).json({ error: "Failed to set featured project" });
+    }
+  });
+
   // Seed database with sample projects (admin only)
   app.post("/api/seed-projects", async (req, res) => {
     try {

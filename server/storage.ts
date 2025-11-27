@@ -34,6 +34,8 @@ export interface IStorage {
   submitRating(rating: InsertRating): Promise<Rating>;
   getRatingsForProject(projectId: string): Promise<Rating[]>;
   getRatedProjectsByUser(userId: string): Promise<Project[]>;
+  getFeaturedProject(): Promise<Project | undefined>;
+  setFeaturedProject(projectId: string): Promise<void>;
 }
 
 export class SupabaseStorage implements IStorage {
@@ -323,6 +325,43 @@ export class SupabaseStorage implements IStorage {
     }
     
     return (projects as Project[]) || [];
+  }
+
+  async getFeaturedProject(): Promise<Project | undefined> {
+    const sb = getSupabaseClient();
+    if (!sb) return undefined;
+    
+    const { data, error } = await sb
+      .from("projects")
+      .select("*")
+      .eq("is_featured", true)
+      .limit(1)
+      .single();
+    
+    if (error) {
+      console.error("Error fetching featured project:", error);
+      return undefined;
+    }
+    return data as Project;
+  }
+
+  async setFeaturedProject(projectId: string): Promise<void> {
+    const sb = getSupabaseClient();
+    if (!sb) throw new Error("Supabase not configured");
+    
+    // Unset all other featured projects
+    await sb.from("projects").update({ is_featured: false }).neq("id", projectId);
+    
+    // Set this project as featured
+    const { error } = await sb
+      .from("projects")
+      .update({ is_featured: true })
+      .eq("id", projectId);
+    
+    if (error) {
+      console.error("Error setting featured project:", error);
+      throw error;
+    }
   }
 }
 

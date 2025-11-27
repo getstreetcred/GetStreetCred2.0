@@ -127,11 +127,35 @@ export default function Home() {
         rating: p.rating ? parseFloat(p.rating) : 0,
         ratingCount: p.ratingCount || p.rating_count || 0,
         userId: p.userId || p.user_id,
+        isFeatured: p.isFeatured || p.is_featured,
       }));
     },
   });
 
-  const featuredProject: FeaturedProject = {
+  // Fetch featured project from API
+  const { data: apiFeaturedProject } = useQuery({
+    queryKey: ["/api/featured-project"],
+    queryFn: async () => {
+      try {
+        const response = await fetch("/api/featured-project");
+        if (!response.ok) return null;
+        const data = await response.json();
+        return {
+          id: data.id,
+          name: data.name,
+          location: data.location,
+          description: data.description,
+          imageUrl: data.imageUrl || data.image_url,
+          rating: data.rating ? parseFloat(data.rating) : 0,
+          ratingCount: data.ratingCount || data.rating_count || 0,
+        };
+      } catch {
+        return null;
+      }
+    },
+  });
+
+  const featuredProject: FeaturedProject = apiFeaturedProject || {
     id: "hzmb-1",
     name: "Hong Kong-Zhuhai-Macau Bridge",
     location: "Pearl River Delta, China",
@@ -327,6 +351,33 @@ export default function Home() {
     }
   };
 
+  const handleSetFeaturedProject = async (projectId: string) => {
+    if (!user || user.role !== "admin") {
+      alert("Only admins can set featured projects");
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}/feature`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userRole: user.role }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to set featured project");
+      }
+
+      // Refresh projects and featured project
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/featured-project"] });
+      alert("Project set as featured!");
+    } catch (error: any) {
+      console.error("Error setting featured project:", error);
+      alert(error?.message || "Failed to set featured project");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar 
@@ -397,6 +448,8 @@ export default function Home() {
         onDelete={handleDeleteProject}
         scrollToRating={scrollToRating}
         onJoinNow={handleJoinNow}
+        onSetFeatured={handleSetFeaturedProject}
+        isFeatured={selectedProject?.id === apiFeaturedProject?.id}
       />
 
       <AddProjectModal

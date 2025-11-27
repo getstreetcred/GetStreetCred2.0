@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -22,6 +22,7 @@ export const projects = pgTable("projects", {
   rating: text("rating").default("0").notNull(),
   ratingCount: integer("rating_count").default(0).notNull(),
   userId: varchar("user_id"),
+  isFeatured: boolean("is_featured").default(false).notNull(),
   createdAt: timestamp("created_at").default(sql`now()`),
 });
 
