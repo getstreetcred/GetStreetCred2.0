@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Building2, LayoutGrid, Plane, Train, Landmark, Building, Home, Road } from "lucide-react";
+import { Building2, LayoutGrid, Plane, Train, Landmark, Building, Home, Navigation } from "lucide-react";
 
 interface Category {
   id: string;
@@ -22,7 +22,7 @@ const defaultCategories: Category[] = [
   { id: "railway", label: "Railways", icon: Train },
   { id: "stadium", label: "Stadiums", icon: Building },
   { id: "residential", label: "Residential", icon: Home },
-  { id: "roads", label: "Roads", icon: Road },
+  { id: "roads", label: "Roads", icon: Navigation },
 ];
 
 export default function CategoryFilter({
