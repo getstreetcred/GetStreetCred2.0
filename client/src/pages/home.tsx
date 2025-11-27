@@ -276,15 +276,14 @@ export default function Home() {
       const countB = typeof b.ratingCount === 'string' ? parseInt(b.ratingCount) : (b.ratingCount || 0);
       
       // Primary sort: by rating count (most reviewed first)
-      // Return negative if a > b (a comes first), positive if b > a (b comes first)
       if (countA !== countB) {
-        return countB - countA;  // Descending: highest count first
+        return countB - countA;
       }
       
       // Secondary sort: if counts are equal, sort by rating (highest rating first)
       const ratingA = typeof a.rating === 'string' ? parseFloat(a.rating) : a.rating;
       const ratingB = typeof b.rating === 'string' ? parseFloat(b.rating) : b.rating;
-      return ratingB - ratingA;  // Descending: highest rating first
+      return ratingB - ratingA;
     });
 
   const filteredTopRatedProjects = filteredTrendingProjects
