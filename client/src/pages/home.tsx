@@ -297,6 +297,7 @@ export default function Home() {
         onEdit={handleEditProject}
         onDelete={handleDeleteProject}
         scrollToRating={scrollToRating}
+        onJoinNow={handleJoinNow}
       />
 
       <AddProjectModal

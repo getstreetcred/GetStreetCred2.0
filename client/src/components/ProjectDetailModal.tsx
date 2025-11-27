@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { MapPin, Star, Calendar, Users, Trash2, Edit } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
 
 export interface ProjectDetail {
   id: string;
@@ -28,6 +29,7 @@ interface ProjectDetailModalProps {
   onEdit?: (projectId: string) => void;
   onDelete?: (projectId: string) => void;
   scrollToRating?: boolean;
+  onJoinNow?: () => void;
 }
 
 export default function ProjectDetailModal({
@@ -38,7 +40,9 @@ export default function ProjectDetailModal({
   onEdit,
   onDelete,
   scrollToRating = false,
+  onJoinNow,
 }: ProjectDetailModalProps) {
+  const { user } = useAuth();
   const [userRating, setUserRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [review, setReview] = useState("");
@@ -223,102 +227,141 @@ export default function ProjectDetailModal({
           </div>
 
           <div className="border-t border-border pt-4" ref={ratingRef}>
-            <h3 className="text-base font-semibold mb-3" data-testid="text-rate-heading">
-              {hasSubmitted ? "Thanks for your rating!" : "Rate this Project"}
-            </h3>
+            {user ? (
+              <>
+                <h3 className="text-base font-semibold mb-3" data-testid="text-rate-heading">
+                  {hasSubmitted ? "Thanks for your rating!" : "Rate this Project"}
+                </h3>
 
-            {hasSubmitted ? (
-              <div className="flex items-center gap-3 p-4 bg-primary/10 rounded-lg border border-primary/20">
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`w-5 h-5 ${
-                        i < userRating
-                          ? "fill-primary text-primary"
-                          : "text-muted-foreground"
-                      }`}
-                    />
-                  ))}
-                </div>
-                <span className="text-foreground font-medium text-sm">
-                  You rated this {userRating} star{userRating !== 1 ? "s" : ""}
-                </span>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-muted-foreground">Your rating:</span>
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        className="p-0.5 transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary rounded"
-                        onMouseEnter={() => setHoverRating(i + 1)}
-                        onMouseLeave={() => setHoverRating(0)}
-                        onClick={() => setUserRating(i + 1)}
-                        data-testid={`button-star-${i + 1}`}
-                        aria-label={`Rate ${i + 1} stars`}
-                      >
+                {hasSubmitted ? (
+                  <div className="flex items-center gap-3 p-4 bg-primary/10 rounded-lg border border-primary/20">
+                    <div className="flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
                         <Star
-                          className={`w-7 h-7 transition-colors ${
-                            i < displayRating
+                          key={i}
+                          className={`w-5 h-5 ${
+                            i < userRating
                               ? "fill-primary text-primary"
-                              : "text-muted-foreground hover:text-primary/50"
+                              : "text-muted-foreground"
                           }`}
                         />
-                      </button>
-                    ))}
-                  </div>
-                  {displayRating > 0 && (
-                    <span className="text-sm font-medium text-primary">
-                      {displayRating} star{displayRating !== 1 ? "s" : ""}
+                      ))}
+                    </div>
+                    <span className="text-foreground font-medium text-sm">
+                      You rated this {userRating} star{userRating !== 1 ? "s" : ""}
                     </span>
-                  )}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-muted-foreground">Your rating:</span>
+                      <div className="flex items-center gap-1">
+                        {[...Array(5)].map((_, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            className="p-0.5 transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary rounded"
+                            onMouseEnter={() => setHoverRating(i + 1)}
+                            onMouseLeave={() => setHoverRating(0)}
+                            onClick={() => setUserRating(i + 1)}
+                            data-testid={`button-star-${i + 1}`}
+                            aria-label={`Rate ${i + 1} stars`}
+                          >
+                            <Star
+                              className={`w-7 h-7 transition-colors ${
+                                i < displayRating
+                                  ? "fill-primary text-primary"
+                                  : "text-muted-foreground hover:text-primary/50"
+                              }`}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                      {displayRating > 0 && (
+                        <span className="text-sm font-medium text-primary">
+                          {displayRating} star{displayRating !== 1 ? "s" : ""}
+                        </span>
+                      )}
+                    </div>
+
+                    <Textarea
+                      placeholder="Share your thoughts about this project (optional)"
+                      value={review}
+                      onChange={(e) => setReview(e.target.value)}
+                      className="resize-none text-sm"
+                      rows={3}
+                      data-testid="input-review"
+                    />
+
+                    <Button
+                      className="w-full"
+                      disabled={userRating === 0}
+                      onClick={handleSubmitRating}
+                      data-testid="button-submit-rating"
+                    >
+                      Submit Rating
+                    </Button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <h3 className="text-base font-semibold">Rating</h3>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-5 h-5 ${
+                            i < Math.floor(project.rating)
+                              ? "fill-primary text-primary"
+                              : "text-muted-foreground"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-foreground font-semibold">
+                      {project.rating.toFixed(1)}
+                    </span>
+                    <span className="text-muted-foreground text-sm">
+                      ({project.ratingCount} ratings)
+                    </span>
+                  </div>
                 </div>
-
-                <Textarea
-                  placeholder="Share your thoughts about this project (optional)"
-                  value={review}
-                  onChange={(e) => setReview(e.target.value)}
-                  className="resize-none text-sm"
-                  rows={3}
-                  data-testid="input-review"
-                />
-
                 <Button
                   className="w-full"
-                  disabled={userRating === 0}
-                  onClick={handleSubmitRating}
-                  data-testid="button-submit-rating"
+                  onClick={onJoinNow}
+                  data-testid="button-join-now-rate"
                 >
-                  Submit Rating
+                  Join now to rate the project
                 </Button>
               </div>
             )}
           </div>
 
-          <div className="border-t border-border pt-4 flex gap-2">
-            <Button
-              variant="secondary"
-              className="flex-1"
-              onClick={handleEdit}
-              data-testid="button-edit-project"
-            >
-              <Edit className="w-4 h-4 mr-2" />
-              Edit
-            </Button>
-            <Button
-              variant="secondary"
-              className="flex-1 text-destructive hover:text-destructive"
-              onClick={handleDelete}
-              data-testid="button-delete-project"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete
-            </Button>
-          </div>
+          {user && (
+            <div className="border-t border-border pt-4 flex gap-2">
+              <Button
+                variant="secondary"
+                className="flex-1"
+                onClick={handleEdit}
+                data-testid="button-edit-project"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Edit
+              </Button>
+              <Button
+                variant="secondary"
+                className="flex-1 text-destructive hover:text-destructive"
+                onClick={handleDelete}
+                data-testid="button-delete-project"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete
+              </Button>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
