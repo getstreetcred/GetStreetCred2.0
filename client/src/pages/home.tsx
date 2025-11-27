@@ -14,86 +14,6 @@ import { type Project } from "@/components/ProjectCard";
 import { queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/lib/auth-context";
 
-import heroImage from "@assets/stock_images/hong_kong_zhuhai_mac_56c5fcf7.jpg";
-import burjKhalifa from "@assets/stock_images/burj_khalifa_dubai_s_0d086f10.jpg";
-import shanghaiTower from "@assets/stock_images/shanghai_tower_moder_9c776149.jpg";
-import marinaBay from "@assets/stock_images/singapore_marina_bay_c37dd08f.jpg";
-import changiJewel from "@assets/stock_images/singapore_changi_air_22d4cc43.jpg";
-import tokyoSkytree from "@assets/stock_images/tokyo_skytree_tower__95808630.jpg";
-import cityscape from "@assets/stock_images/modern_city_skyline__3c956477.jpg";
-
-// Mock projects for fallback
-const MOCK_PROJECTS: Project[] = [
-  {
-    id: "burj-1",
-    name: "Burj Khalifa",
-    location: "Dubai, UAE",
-    imageUrl: burjKhalifa,
-    rating: 4.9,
-    ratingCount: 5420,
-    completionYear: 2010,
-    category: "Skyscraper",
-  },
-  {
-    id: "shanghai-1",
-    name: "Shanghai Tower",
-    location: "Shanghai, China",
-    imageUrl: shanghaiTower,
-    rating: 4.7,
-    ratingCount: 3210,
-    completionYear: 2015,
-    category: "Skyscraper",
-  },
-  {
-    id: "marina-1",
-    name: "Marina Bay Sands",
-    location: "Singapore",
-    imageUrl: marinaBay,
-    rating: 4.8,
-    ratingCount: 4150,
-    completionYear: 2010,
-    category: "Hotel & Casino",
-  },
-  {
-    id: "jewel-1",
-    name: "Changi Airport Jewel",
-    location: "Singapore",
-    imageUrl: changiJewel,
-    rating: 4.9,
-    ratingCount: 2890,
-    completionYear: 2019,
-    category: "Airport",
-  },
-  {
-    id: "skytree-1",
-    name: "Tokyo Skytree",
-    location: "Tokyo, Japan",
-    imageUrl: tokyoSkytree,
-    rating: 4.6,
-    ratingCount: 3780,
-    completionYear: 2012,
-    category: "Tower",
-  },
-  {
-    id: "downtown-1",
-    name: "Dubai Downtown District",
-    location: "Dubai, UAE",
-    imageUrl: cityscape,
-    rating: 4.5,
-    ratingCount: 1920,
-    completionYear: 2020,
-    category: "Urban Development",
-  },
-];
-
-const PROJECT_DESCRIPTIONS: Record<string, string> = {
-  "burj-1": "Standing at 828 meters, Burj Khalifa is the world's tallest building. This architectural marvel features 163 floors above ground and took 6 years to construct, showcasing the pinnacle of modern engineering and design.",
-  "shanghai-1": "Shanghai Tower is a 632-meter supertall skyscraper featuring a unique twisted design that reduces wind loads. It houses offices, hotels, and observation decks with stunning views of the Pudong skyline.",
-  "marina-1": "Marina Bay Sands is an integrated resort featuring three 55-story towers topped by a stunning SkyPark. The iconic design includes the world's largest rooftop infinity pool and has become Singapore's most recognizable landmark.",
-  "jewel-1": "Changi Airport's Jewel is a nature-themed entertainment complex featuring the world's tallest indoor waterfall, the Rain Vortex. It seamlessly blends nature, shopping, and aviation in a stunning glass dome.",
-  "skytree-1": "Tokyo Skytree stands at 634 meters as Japan's tallest structure. This broadcasting tower combines traditional Japanese aesthetics with cutting-edge technology and offers panoramic views of Tokyo from its observation decks.",
-  "downtown-1": "Dubai Downtown is a large-scale urban development centered around the Burj Khalifa. It features world-class shopping, dining, and entertainment venues, representing the height of modern urban planning.",
-};
 
 export default function Home() {
   const { user } = useAuth();
@@ -155,20 +75,10 @@ export default function Home() {
     },
   });
 
-  const featuredProject: FeaturedProject = apiFeaturedProject || {
-    id: "hzmb-1",
-    name: "Hong Kong-Zhuhai-Macau Bridge",
-    location: "Pearl River Delta, China",
-    description: "The world's longest sea crossing, spanning 55 kilometers. A marvel of modern engineering connecting Hong Kong, Macau, and mainland China.",
-    imageUrl: heroImage,
-    rating: 4.8,
-    ratingCount: 2340,
-  };
+  const featuredProject: FeaturedProject | null = apiFeaturedProject || null;
 
-  // Use API projects if available, otherwise use fallback mock projects
-  const trendingProjects: Project[] = apiProjects && apiProjects.length > 0 
-    ? apiProjects 
-    : MOCK_PROJECTS;
+  // Use only API projects - no fallback to mock data
+  const trendingProjects: Project[] = apiProjects;
 
   const topRatedProjects: TopProject[] = trendingProjects
     .sort((a, b) => {
@@ -198,7 +108,7 @@ export default function Home() {
     setScrollToRating(shouldScrollToRating);
     
     // Check if it's the featured project
-    if (projectId === featuredProject.id) {
+    if (featuredProject && projectId === featuredProject.id) {
       const projectDetail: ProjectDetail = {
         id: featuredProject.id,
         name: featuredProject.name,
@@ -207,7 +117,7 @@ export default function Home() {
         rating: featuredProject.rating,
         ratingCount: featuredProject.ratingCount,
         completionYear: 0,
-        category: "Bridge",
+        category: "Infrastructure",
         description: featuredProject.description,
       };
       setSelectedProject(projectDetail);
@@ -227,7 +137,7 @@ export default function Home() {
         ratingCount: project.ratingCount,
         completionYear: project.completionYear,
         category: project.category || "Infrastructure",
-        description: project.description || PROJECT_DESCRIPTIONS[project.id] || "An impressive modern infrastructure project showcasing innovative engineering and design.",
+        description: project.description || "An impressive modern infrastructure project showcasing innovative engineering and design.",
         userId: project.userId,
       };
       setSelectedProject(projectDetail);
