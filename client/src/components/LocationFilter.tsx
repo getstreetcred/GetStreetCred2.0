@@ -1,13 +1,13 @@
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { MapPin, Search } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { MapPin, Search, X } from "lucide-react";
 
 interface LocationFilterProps {
   locations: string[];
@@ -24,6 +24,27 @@ export default function LocationFilter({
   onSelectLocation,
   onSearchChange,
 }: LocationFilterProps) {
+  const [locationSearchOpen, setLocationSearchOpen] = useState(false);
+  const [locationSearchInput, setLocationSearchInput] = useState("");
+
+  // Filter locations based on search input
+  const filteredLocations = locationSearchInput === ""
+    ? locations
+    : locations.filter((loc) =>
+        loc.toLowerCase().includes(locationSearchInput.toLowerCase())
+      );
+
+  const handleSelectLocation = (location: string) => {
+    onSelectLocation?.(location);
+    setLocationSearchOpen(false);
+    setLocationSearchInput("");
+  };
+
+  const getDisplayLocation = () => {
+    if (selectedLocation === "all") return "All Locations";
+    return selectedLocation;
+  };
+
   return (
     <div className="w-full bg-background py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -35,33 +56,61 @@ export default function LocationFilter({
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Location Selector */}
+              {/* Location Selector with Search */}
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-medium text-muted-foreground">
                   Location
                 </label>
-                <Select value={selectedLocation} onValueChange={onSelectLocation}>
-                  <SelectTrigger 
-                    className="w-full border-border/50 hover:border-border transition-colors" 
-                    data-testid="select-location"
-                  >
-                    <SelectValue placeholder="Select a location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all" data-testid="option-location-all">
-                      All Locations
-                    </SelectItem>
-                    {locations.map((location) => (
-                      <SelectItem 
-                        key={location} 
-                        value={location}
-                        data-testid={`option-location-${location.toLowerCase().replace(/\s/g, "-")}`}
-                      >
-                        {location}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover open={locationSearchOpen} onOpenChange={setLocationSearchOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between border-border/50 hover:border-border transition-colors font-normal"
+                      data-testid="button-location-selector"
+                    >
+                      <span className="text-foreground">{getDisplayLocation()}</span>
+                      <Search className="w-4 h-4 text-muted-foreground" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <div className="flex flex-col gap-2 p-2">
+                      <Input
+                        placeholder="Search locations..."
+                        value={locationSearchInput}
+                        onChange={(e) => setLocationSearchInput(e.target.value)}
+                        className="border-border/50"
+                        data-testid="input-location-search"
+                        autoFocus
+                      />
+                      <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
+                        <Button
+                          variant="ghost"
+                          className="justify-start text-sm"
+                          onClick={() => handleSelectLocation("all")}
+                          data-testid="option-location-all"
+                        >
+                          All Locations
+                        </Button>
+                        {filteredLocations.map((location) => (
+                          <Button
+                            key={location}
+                            variant={selectedLocation === location ? "default" : "ghost"}
+                            className="justify-start text-sm"
+                            onClick={() => handleSelectLocation(location)}
+                            data-testid={`option-location-${location.toLowerCase().replace(/\s/g, "-")}`}
+                          >
+                            {location}
+                          </Button>
+                        ))}
+                        {filteredLocations.length === 0 && (
+                          <div className="text-xs text-muted-foreground p-2 text-center">
+                            No locations found
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
               
               {/* Search Bar */}
