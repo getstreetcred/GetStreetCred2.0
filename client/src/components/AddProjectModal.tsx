@@ -435,7 +435,7 @@ export default function AddProjectModal({
                           <img
                             src={imagePreview || form.watch("imageUrl")}
                             alt="Preview"
-                            className="w-full h-40 object-cover rounded-lg"
+                            className="w-full max-h-96 object-contain rounded-lg bg-muted"
                             data-testid="image-preview"
                             onError={() => {
                               toast({
