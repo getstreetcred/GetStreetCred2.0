@@ -59,10 +59,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create new project
+  // Create new project (admin only)
   app.post("/api/projects", async (req, res) => {
     try {
-      const { userId, ...projectData } = req.body;
+      const { userId, userRole, ...projectData } = req.body;
+      
+      // Check if user is admin
+      if (userRole !== "admin") {
+        return res.status(403).json({ error: "Only admins can create projects" });
+      }
+      
       const validatedData = insertProjectSchema.parse(projectData);
       const project = await storage.createProject(validatedData, userId);
       res.status(201).json(transformProject(project));

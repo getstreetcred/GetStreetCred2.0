@@ -103,7 +103,7 @@ export default function Navbar({ onSignIn, onJoinNow, onAddProject }: NavbarProp
 
           <div className="flex items-center gap-2">
             <div className="hidden sm:flex items-center gap-2">
-              {user && (
+              {user && user.role === "admin" && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -225,7 +225,7 @@ export default function Navbar({ onSignIn, onJoinNow, onAddProject }: NavbarProp
                       </Button>
                     )
                   ))}
-                  {user && (
+                  {user && user.role === "admin" && (
                     <>
                       <Button
                         variant="ghost"
