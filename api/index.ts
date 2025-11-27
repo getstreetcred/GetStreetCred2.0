@@ -22,6 +22,11 @@ export async function serveStatic(app: Express, _server: Server) {
   });
 }
 
-(async () => {
-  await runApp(serveStatic);
-})();
+// Start the app immediately - Vercel will handle the serverless function wrapping
+runApp(serveStatic).catch((err) => {
+  console.error("Failed to start app:", err);
+  process.exit(1);
+});
+
+// Export the app instance for Vercel to use
+export { app } from "../server/app";
