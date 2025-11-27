@@ -14,6 +14,7 @@ import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Edit, Save, X, Upload } from "lucide-react";
 import type { Project } from "@/components/ProjectCard";
+import ProjectDetailModal, { type ProjectDetail } from "@/components/ProjectDetailModal";
 
 const profileSchema = z.object({
   username: z.string().min(1, "Username is required").optional(),
@@ -30,6 +31,8 @@ export default function Profile() {
   const [isSaving, setIsSaving] = useState(false);
   const [profilePicPreview, setProfilePicPreview] = useState<string | null>(user?.profilePictureUrl || null);
   const [profilePicFile, setProfilePicFile] = useState<string | null>(null);
+  const [selectedProject, setSelectedProject] = useState<ProjectDetail | null>(null);
+  const [projectModalOpen, setProjectModalOpen] = useState(false);
 
   // Redirect to home if not logged in
   useEffect(() => {
@@ -57,6 +60,23 @@ export default function Profile() {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleProjectClick = (project: Project) => {
+    const projectDetail: ProjectDetail = {
+      id: project.id,
+      name: project.name,
+      location: project.location,
+      imageUrl: project.imageUrl,
+      rating: project.rating,
+      ratingCount: project.ratingCount,
+      completionYear: project.completionYear,
+      category: project.category || "Infrastructure",
+      description: project.description || "An impressive modern infrastructure project.",
+      userId: project.userId,
+    };
+    setSelectedProject(projectDetail);
+    setProjectModalOpen(true);
   };
 
   // Fetch user's projects
@@ -328,7 +348,12 @@ export default function Profile() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {userProjects.map((project: Project) => (
-                <Card key={project.id} className="overflow-hidden hover-elevate" data-testid={`card-project-${project.id}`}>
+                <Card 
+                  key={project.id} 
+                  className="overflow-hidden hover-elevate cursor-pointer" 
+                  onClick={() => handleProjectClick(project)}
+                  data-testid={`card-project-${project.id}`}
+                >
                   <img
                     src={project.imageUrl}
                     alt={project.name}
@@ -368,6 +393,13 @@ export default function Profile() {
             Logout
           </Button>
         </div>
+
+        {/* Project Detail Modal */}
+        <ProjectDetailModal
+          project={selectedProject}
+          isOpen={projectModalOpen}
+          onClose={() => setProjectModalOpen(false)}
+        />
       </div>
     </div>
   );
