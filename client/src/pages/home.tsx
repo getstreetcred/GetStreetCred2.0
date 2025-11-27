@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import Navbar from "@/components/Navbar";
 import HeroSection, { type FeaturedProject } from "@/components/HeroSection";
 import CategoryFilter from "@/components/CategoryFilter";
+import LocationFilter from "@/components/LocationFilter";
 import TrendingSection from "@/components/TrendingSection";
 import TopRatedSection, { type TopProject } from "@/components/TopRatedSection";
 import Footer from "@/components/Footer";
@@ -97,6 +98,7 @@ export default function Home() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<"signin" | "signup">("signin");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedLocation, setSelectedLocation] = useState("all");
   const [selectedProject, setSelectedProject] = useState<ProjectDetail | null>(null);
   const [projectModalOpen, setProjectModalOpen] = useState(false);
   const [addProjectModalOpen, setAddProjectModalOpen] = useState(false);
@@ -227,12 +229,35 @@ export default function Home() {
         (selectedCategory === "hotel" && project.category === "Hotel & Casino")
       );
 
-  const filteredTopRatedProjects = selectedCategory === "all"
-    ? topRatedProjects
-    : topRatedProjects.filter(project =>
-        project.category?.toLowerCase() === selectedCategory.toLowerCase() ||
-        (selectedCategory === "hotel" && project.category?.includes("Hotel"))
-      );
+  // Extract unique locations from projects
+  const uniqueLocations = Array.from(
+    new Set(trendingProjects.map(p => p.location))
+  ).sort();
+
+  // Filter by category and location
+  const filteredTrendingProjects = trendingProjects
+    .filter(project => {
+      const categoryMatch = selectedCategory === "all" || 
+        project.category?.toLowerCase() === selectedCategory.toLowerCase() || 
+        (selectedCategory === "hotel" && project.category === "Hotel & Casino");
+      
+      const locationMatch = selectedLocation === "all" || project.location === selectedLocation;
+      
+      return categoryMatch && locationMatch;
+    });
+
+  const filteredTopRatedProjects = filteredTrendingProjects
+    .sort((a, b) => {
+      const ratingA = typeof a.rating === 'string' ? parseFloat(a.rating) : a.rating;
+      const ratingB = typeof b.rating === 'string' ? parseFloat(b.rating) : b.rating;
+      return ratingB - ratingA;
+    })
+    .slice(0, 5)
+    .map((p, idx) => ({
+      ...p,
+      rank: idx + 1,
+      category: p.category || "Infrastructure",
+    }));
 
   const handleProjectAdded = () => {
     // Refresh projects from API
@@ -268,6 +293,12 @@ export default function Home() {
           project={featuredProject}
           onProjectClick={handleProjectClick}
           onButtonClick={handleJoinNow}
+        />
+
+        <LocationFilter
+          locations={uniqueLocations}
+          selectedLocation={selectedLocation}
+          onSelectLocation={setSelectedLocation}
         />
 
         <CategoryFilter
