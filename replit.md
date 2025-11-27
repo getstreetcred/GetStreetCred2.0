@@ -54,10 +54,11 @@ No compromises in app functionality during cleanup
 
 **Express Server with TypeScript**
 - Development server: Vite dev server with HMR for fast development
-- Production server: Pre-built static assets served via Express
+- Production server (Vercel): Serverless Express handler in `api/index.ts`
 - Route registration pattern in `/server/routes.ts` with API endpoints
 - Request/response transformation: snake_case ↔ camelCase conversion for Supabase compatibility
 - Logging middleware for request/response tracking
+- Lazy route initialization for Vercel serverless compatibility
 
 **Storage Abstraction Layer**
 - Interface-based storage design (`IStorage`) with Supabase implementation
@@ -66,8 +67,8 @@ No compromises in app functionality during cleanup
 - All operations delegated to Supabase cloud database
 
 **Development vs Production Split**
-- `index-dev.ts`: Vite middleware integration for hot module replacement
-- `index-prod.ts`: Static file serving from `/dist/public`
+- `index-dev.ts`: Vite middleware integration with HTTP server for local development
+- `api/index.ts`: Vercel serverless handler that exports Express app
 - Environment-based configuration via NODE_ENV
 
 ### Data Layer
@@ -143,7 +144,7 @@ No compromises in app functionality during cleanup
 - Only authenticated users can rate projects
 
 **Content Sections**
-- Hero section: Featured project with large imagery and gradient overlays (conditionally rendered when featured project exists)
+- Hero section: Featured project with large imagery and gradient overlays (conditionally renders when featured project exists)
 - Trending section: Grid of recent/popular projects with location/category filtering
 - Top-rated section: Ranked list with special styling for top 3 positions
 - Location-based discovery with autocomplete dropdown
@@ -161,27 +162,27 @@ No compromises in app functionality during cleanup
 
 ## Recent Changes (November 27, 2025)
 
-**Data Cleanup: Removed All Mock Data**
+**Mock Data Removal Complete**
 - Removed `MOCK_PROJECTS` array from `client/src/pages/home.tsx`
-- Removed `PROJECT_DESCRIPTIONS` object from `client/src/pages/home.tsx`
-- Removed all hard-coded stock image imports (no longer used)
-- Made `featuredProject` nullable - conditionally renders `HeroSection` only when API returns featured project
-- Removed `/api/seed-projects` endpoint from `server/routes.ts` (contained 7 hard-coded projects)
-- App now exclusively fetches projects from live Supabase API with no fallback mechanisms
+- Removed `PROJECT_DESCRIPTIONS` object
+- Removed all hard-coded stock image imports
+- Made featured project nullable with conditional rendering
+- Removed `/api/seed-projects` endpoint with hard-coded data
 - Updated `Project` interface to include optional `description` and `userId` properties
-- All 4 TypeScript errors resolved, build successful
+- All TypeScript errors resolved
+
+**Vercel Serverless Handler Fix**
+- Fixed `api/index.ts` to properly work with Vercel serverless functions
+- Implemented lazy route initialization to ensure routes register before request handling
+- Proper middleware ordering: JSON parsing → logging → route initialization → static files
+- Express app properly exported for Vercel to wrap as serverless handler
+- Environment variables now accessible and used in production
 
 **Deployment Status**
 - App deployed to Vercel at getstreetcred.vercel.app
-- Uses only live Supabase data
-- No static/mock data shown in production
-
-**Admin System (Previous Implementation)**
-- Added `role` column to users table (default: "user")
-- Added `user_id` column to projects table to track project creator
-- Implemented admin auto-detection: anyone signing up with `admin@getstreetcred.com` becomes admin
-- Backend permission checks on edit/delete endpoints
-- Frontend permission checks hide edit/delete buttons from unauthorized users
+- Uses only live Supabase data (no fallbacks)
+- Supabase environment variables configured in Vercel dashboard
+- Serverless handler properly initializes routes before processing requests
 
 ## External Dependencies
 
