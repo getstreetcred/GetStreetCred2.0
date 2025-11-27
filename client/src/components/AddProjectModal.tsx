@@ -106,18 +106,48 @@ export default function AddProjectModal({
   };
 
   const handleUrlSubmit = () => {
-    if (!urlInput.trim()) {
+    const url = urlInput.trim();
+    if (!url) {
       toast({
         title: "Error",
-        description: "Please enter a valid URL",
+        description: "Please enter a URL",
         variant: "destructive",
       });
       return;
     }
-    setImagePreview(urlInput);
-    form.setValue("imageUrl", urlInput);
-    setUrlInput("");
-    setUploadMode("device");
+
+    // Validate URL format
+    try {
+      new URL(url);
+    } catch {
+      toast({
+        title: "Error",
+        description: "Please enter a valid URL (e.g., https://example.com/image.jpg)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Test if image can be loaded
+    const img = new Image();
+    img.onload = () => {
+      setImagePreview(url);
+      form.setValue("imageUrl", url);
+      setUrlInput("");
+      setUploadMode("device");
+      toast({
+        title: "Success",
+        description: "Image loaded successfully",
+      });
+    };
+    img.onerror = () => {
+      toast({
+        title: "Error",
+        description: "Failed to load image. The URL might be broken or blocked by CORS. Try using another image source.",
+        variant: "destructive",
+      });
+    };
+    img.src = url;
   };
 
   const handleSubmit = async (data: any) => {
