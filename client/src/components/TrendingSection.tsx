@@ -14,6 +14,28 @@ export default function TrendingSection({
   onProjectClick,
   onViewAll 
 }: TrendingSectionProps) {
+  // Re-sort projects by rating count (most reviewed first) at render time to ensure correct order
+  const sortedProjects = [...projects].sort((a, b) => {
+    const countA = Math.max(0, typeof a.ratingCount === 'string' ? parseInt(a.ratingCount, 10) : (a.ratingCount || 0));
+    const countB = Math.max(0, typeof b.ratingCount === 'string' ? parseInt(b.ratingCount, 10) : (b.ratingCount || 0));
+    
+    // Primary sort: by rating count (most reviewed first)
+    if (countA !== countB) {
+      return countB - countA;
+    }
+    
+    // Secondary sort: if counts are equal, sort by rating (highest rating first)
+    const ratingA = typeof a.rating === 'string' ? parseFloat(a.rating) : (a.rating || 0);
+    const ratingB = typeof b.rating === 'string' ? parseFloat(b.rating) : (b.rating || 0);
+    return ratingB - ratingA;
+  });
+  
+  console.log("TrendingSection received projects, sorted order:", sortedProjects.map(p => ({
+    name: p.name,
+    ratingCount: p.ratingCount,
+    rating: p.rating
+  })));
+
   return (
     <section id="trending-section" className="py-12 md:py-16 bg-background scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -47,7 +69,7 @@ export default function TrendingSection({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project) => (
+          {sortedProjects.map((project) => (
             <ProjectCard
               key={project.id}
               project={project}
