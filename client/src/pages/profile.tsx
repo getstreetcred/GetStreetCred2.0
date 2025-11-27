@@ -62,7 +62,7 @@ export default function Profile() {
     }
   };
 
-  const handleProjectClick = (project: Project) => {
+  const handleProjectClick = (project: Project & { description?: string; userId?: string }) => {
     const projectDetail: ProjectDetail = {
       id: project.id,
       name: project.name,
@@ -397,8 +397,8 @@ export default function Profile() {
         {/* Project Detail Modal */}
         <ProjectDetailModal
           project={selectedProject}
-          isOpen={projectModalOpen}
-          onClose={() => setProjectModalOpen(false)}
+          open={projectModalOpen}
+          onOpenChange={setProjectModalOpen}
         />
       </div>
     </div>
