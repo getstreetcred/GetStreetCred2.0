@@ -275,9 +275,11 @@ export default function Home() {
       const countA = typeof a.ratingCount === 'string' ? parseInt(a.ratingCount) : (a.ratingCount || 0);
       const countB = typeof b.ratingCount === 'string' ? parseInt(b.ratingCount) : (b.ratingCount || 0);
       
-      // Primary sort: by rating count (most reviewed first)
-      if (countA !== countB) {
-        return countB - countA;
+      // Primary sort: by rating count (most reviewed first) - DESCENDING
+      // countA - countB gives us ASCENDING, so we reverse it for DESCENDING
+      const countDiff = countA - countB;
+      if (countDiff !== 0) {
+        return -countDiff; // Negate to get descending order (highest count first)
       }
       
       // Secondary sort: if counts are equal, sort by rating (highest rating first)
