@@ -221,14 +221,6 @@ export default function Home() {
     setAuthModalOpen(true);
   };
 
-  // Filter projects based on selected category
-  const filteredTrendingProjects = selectedCategory === "all" 
-    ? trendingProjects 
-    : trendingProjects.filter(project => 
-        project.category?.toLowerCase() === selectedCategory.toLowerCase() || 
-        (selectedCategory === "hotel" && project.category === "Hotel & Casino")
-      );
-
   // Extract unique locations from projects
   const uniqueLocations = Array.from(
     new Set(trendingProjects.map(p => p.location))
