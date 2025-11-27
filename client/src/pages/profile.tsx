@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Edit, Save, X, Upload } from "lucide-react";
 import type { Project } from "@/components/ProjectCard";
 import ProjectDetailModal, { type ProjectDetail } from "@/components/ProjectDetailModal";
+import AddProjectModal from "@/components/AddProjectModal";
 
 const profileSchema = z.object({
   username: z.string().min(1, "Username is required").optional(),
@@ -33,6 +34,8 @@ export default function Profile() {
   const [profilePicFile, setProfilePicFile] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<ProjectDetail | null>(null);
   const [projectModalOpen, setProjectModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [addProjectModalOpen, setAddProjectModalOpen] = useState(false);
 
   // Redirect to home if not logged in
   useEffect(() => {
@@ -124,12 +127,17 @@ export default function Profile() {
   const handleEditProject = (projectId: string) => {
     const project = userProjects.find((p: any) => p.id === projectId);
     if (project) {
-      // Navigate to edit project (you could implement an edit modal here or navigate to a new page)
-      // For now, we can just log it
-      console.log("Edit project:", project);
+      setEditingProject(project);
+      setAddProjectModalOpen(true);
       setProjectModalOpen(false);
-      // You could open an edit project modal here if needed
     }
+  };
+
+  const handleProjectAdded = () => {
+    // Refresh projects from API
+    queryClient.invalidateQueries({ queryKey: ["/api/user-projects", user?.id] });
+    setAddProjectModalOpen(false);
+    setEditingProject(null);
   };
 
   const handleSubmitRating = (projectId: string, rating: number, review?: string) => {
@@ -460,6 +468,17 @@ export default function Profile() {
           onSubmitRating={handleSubmitRating}
           onEdit={handleEditProject}
           onDelete={handleDeleteProject}
+        />
+
+        {/* Add/Edit Project Modal */}
+        <AddProjectModal
+          open={addProjectModalOpen}
+          onOpenChange={(open) => {
+            setAddProjectModalOpen(open);
+            if (!open) setEditingProject(null);
+          }}
+          onProjectAdded={handleProjectAdded}
+          editingProject={editingProject}
         />
       </div>
     </div>
