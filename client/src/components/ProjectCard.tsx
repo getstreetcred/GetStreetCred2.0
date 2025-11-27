@@ -11,6 +11,8 @@ export interface Project {
   ratingCount: number;
   completionYear: number;
   category?: string;
+  description?: string;
+  userId?: string;
 }
 
 interface ProjectCardProps {

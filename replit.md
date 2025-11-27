@@ -14,12 +14,13 @@ GetStreetCred is a social platform for discovering, showcasing, and rating moder
 - State Management: TanStack React Query
 - Backend: Express.js with TypeScript
 - Database: PostgreSQL via Supabase
-- Deployment: Replit environment
+- Deployment: Vercel (getstreetcred.vercel.app)
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
 Database: Supabase only (no mixing with local PostgreSQL)
+No compromises in app functionality during cleanup
 
 ## System Architecture
 
@@ -120,6 +121,7 @@ Database: Supabase only (no mixing with local PostgreSQL)
 - Request transformation middleware converts camelCase to snake_case for Supabase queries
 - Response transformation converts snake_case from Supabase back to camelCase for frontend
 - Permission checks on PATCH/DELETE project endpoints
+- Removed: `/api/seed-projects` endpoint (contained hard-coded mock data)
 
 ### UI/UX Patterns
 
@@ -141,7 +143,7 @@ Database: Supabase only (no mixing with local PostgreSQL)
 - Only authenticated users can rate projects
 
 **Content Sections**
-- Hero section: Featured project with large imagery and gradient overlays
+- Hero section: Featured project with large imagery and gradient overlays (conditionally rendered when featured project exists)
 - Trending section: Grid of recent/popular projects with location/category filtering
 - Top-rated section: Ranked list with special styling for top 3 positions
 - Location-based discovery with autocomplete dropdown
@@ -159,23 +161,27 @@ Database: Supabase only (no mixing with local PostgreSQL)
 
 ## Recent Changes (November 27, 2025)
 
-**Final Pre-Launch Updates**
-- Admin-only project creation: Only admin@getstreetcred.com can create/edit/delete projects
-- "Add Project" button hidden from non-admin users in navbar (desktop & mobile)
-- Backend permission check enforces 403 error if non-admin attempts project creation
-- Profile page redesigned to show "My Rated Projects" instead of created projects
-- New API endpoint `/api/rated-projects/:userId` fetches projects rated by user
-- Storage layer method `getRatedProjectsByUser()` queries ratings table and returns projects
-- Regular users now have a meaningful profile showing their engagement (rated projects)
+**Data Cleanup: Removed All Mock Data**
+- Removed `MOCK_PROJECTS` array from `client/src/pages/home.tsx`
+- Removed `PROJECT_DESCRIPTIONS` object from `client/src/pages/home.tsx`
+- Removed all hard-coded stock image imports (no longer used)
+- Made `featuredProject` nullable - conditionally renders `HeroSection` only when API returns featured project
+- Removed `/api/seed-projects` endpoint from `server/routes.ts` (contained 7 hard-coded projects)
+- App now exclusively fetches projects from live Supabase API with no fallback mechanisms
+- Updated `Project` interface to include optional `description` and `userId` properties
+- All 4 TypeScript errors resolved, build successful
 
-**Previous Admin System**
+**Deployment Status**
+- App deployed to Vercel at getstreetcred.vercel.app
+- Uses only live Supabase data
+- No static/mock data shown in production
+
+**Admin System (Previous Implementation)**
 - Added `role` column to users table (default: "user")
 - Added `user_id` column to projects table to track project creator
 - Implemented admin auto-detection: anyone signing up with `admin@getstreetcred.com` becomes admin
 - Backend permission checks on edit/delete endpoints
 - Frontend permission checks hide edit/delete buttons from unauthorized users
-- Supabase integration: All data stored in Supabase PostgreSQL database
-- Frontend/Backend API data transformation: Supabase uses snake_case, frontend uses camelCase
 
 ## External Dependencies
 
