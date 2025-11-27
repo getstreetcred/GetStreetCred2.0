@@ -23,7 +23,7 @@ const profileSchema = z.object({
 type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function Profile() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
@@ -119,7 +119,10 @@ export default function Profile() {
 
       const updatedUser = await response.json();
       // Update auth context with new user data
-      (window as any).__updateAuthUser?.(updatedUser);
+      updateUser({
+        email: updatedUser.email,
+        profilePictureUrl: updatedUser.profilePictureUrl,
+      });
       
       toast({
         title: "Success",
