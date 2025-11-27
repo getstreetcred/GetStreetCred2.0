@@ -1,16 +1,25 @@
-import { type User, type InsertUser, type Project, type InsertProject, type Rating, type InsertRating, users, projects, ratings } from "@shared/schema";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-import { eq } from "drizzle-orm";
+import { type User, type InsertUser, type Project, type InsertProject, type Rating, type InsertRating } from "@shared/schema";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-// Initialize database connection
-const connectionString = process.env.DATABASE_URL;
-if (!connectionString) {
-  throw new Error("DATABASE_URL not set");
+// Initialize Supabase client lazily
+let supabase: SupabaseClient | null = null;
+
+function getSupabaseClient(): SupabaseClient | null {
+  if (!supabase) {
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_ANON_KEY;
+    
+    if (supabaseUrl && supabaseKey && supabaseUrl.startsWith("https://")) {
+      try {
+        supabase = createClient(supabaseUrl, supabaseKey);
+      } catch (error) {
+        console.error("Failed to initialize Supabase client:", error);
+        return null;
+      }
+    }
+  }
+  return supabase;
 }
-
-const client = postgres(connectionString);
-const db = drizzle(client);
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -26,93 +35,260 @@ export interface IStorage {
   getRatingsForProject(projectId: string): Promise<Rating[]>;
 }
 
-export class PostgresStorage implements IStorage {
+export class SupabaseStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.id, id));
-    return result[0];
+    const sb = getSupabaseClient();
+    if (!sb) throw new Error("Supabase not configured");
+    
+    const { data, error } = await sb
+      .from("users")
+      .select("*")
+      .eq("id", id)
+      .single();
+    
+    if (error) {
+      console.error("Error fetching user:", error);
+      return undefined;
+    }
+    return data as User;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
+    const sb = getSupabaseClient();
+    if (!sb) throw new Error("Supabase not configured");
+    
     const cleanUsername = username.trim().toLowerCase();
-    const result = await db.select().from(users).where(eq(users.username, cleanUsername));
-    return result[0];
+    
+    const { data, error } = await sb
+      .from("users")
+      .select("*")
+      .eq("username", cleanUsername);
+    
+    if (error) {
+      console.error("Error fetching user by username:", error);
+      return undefined;
+    }
+    
+    const users = (data as User[]) || [];
+    if (users.length === 0) {
+      return undefined;
+    }
+    return users[0];
   }
 
   async createUser(insertUser: InsertUser, role: string = "user"): Promise<User> {
-    const result = await db.insert(users).values({
-      username: insertUser.username,
-      password: insertUser.password,
-      role,
-    }).returning();
-    return result[0];
+    const sb = getSupabaseClient();
+    if (!sb) throw new Error("Supabase not configured");
+    
+    const userData = { ...insertUser, role };
+    const { data, error } = await sb
+      .from("users")
+      .insert([userData])
+      .select()
+      .single();
+    
+    if (error) {
+      console.error("Error creating user:", error);
+      throw error;
+    }
+    return data as User;
   }
 
   async getProjects(): Promise<Project[]> {
-    return await db.select().from(projects);
+    const sb = getSupabaseClient();
+    if (!sb) {
+      console.warn("Supabase not configured, returning empty projects list");
+      return [];
+    }
+    
+    const { data, error } = await sb
+      .from("projects")
+      .select("*");
+    
+    if (error) {
+      console.error("Error fetching projects:", error);
+      return [];
+    }
+    return (data as Project[]) || [];
   }
 
   async getProjectsByCategory(category: string): Promise<Project[]> {
-    return await db.select().from(projects).where(eq(projects.category, category));
+    const sb = getSupabaseClient();
+    if (!sb) return [];
+    
+    const { data, error } = await sb
+      .from("projects")
+      .select("*")
+      .eq("category", category);
+    
+    if (error) {
+      console.error("Error fetching projects by category:", error);
+      return [];
+    }
+    return (data as Project[]) || [];
   }
 
   async getProjectById(id: string): Promise<Project | undefined> {
-    const result = await db.select().from(projects).where(eq(projects.id, id));
-    return result[0];
+    const sb = getSupabaseClient();
+    if (!sb) return undefined;
+    
+    const { data, error } = await sb
+      .from("projects")
+      .select("*")
+      .eq("id", id)
+      .single();
+    
+    if (error) {
+      console.error("Error fetching project:", error);
+      return undefined;
+    }
+    return data as Project;
   }
 
   async createProject(project: InsertProject, userId?: string): Promise<Project> {
-    const result = await db.insert(projects).values({
+    const sb = getSupabaseClient();
+    if (!sb) throw new Error("Supabase not configured");
+    
+    // Transform camelCase to snake_case for Supabase
+    const projectData = {
       name: project.name,
       location: project.location,
       description: project.description,
-      imageUrl: project.imageUrl,
+      image_url: project.imageUrl,
       category: project.category,
-      completionYear: project.completionYear,
-      userId: userId || null,
-    }).returning();
-    return result[0];
+      completion_year: project.completionYear,
+      ...(userId && { user_id: userId }),
+    };
+    
+    const { data, error } = await sb
+      .from("projects")
+      .insert([projectData])
+      .select()
+      .single();
+    
+    if (error) {
+      console.error("Error creating project:", error);
+      throw error;
+    }
+    return data as Project;
   }
 
   async updateProject(id: string, project: InsertProject): Promise<Project> {
-    const result = await db.update(projects).set({
+    const sb = getSupabaseClient();
+    if (!sb) throw new Error("Supabase not configured");
+    
+    // Transform camelCase to snake_case for Supabase
+    const projectData = {
       name: project.name,
       location: project.location,
       description: project.description,
-      imageUrl: project.imageUrl,
+      image_url: project.imageUrl,
       category: project.category,
-      completionYear: project.completionYear,
-    }).where(eq(projects.id, id)).returning();
-    return result[0];
+      completion_year: project.completionYear,
+    };
+    
+    const { data, error } = await sb
+      .from("projects")
+      .update(projectData)
+      .eq("id", id)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error("Error updating project:", error);
+      throw error;
+    }
+    return data as Project;
   }
 
   async deleteProject(id: string): Promise<void> {
-    await db.delete(projects).where(eq(projects.id, id));
+    const sb = getSupabaseClient();
+    if (!sb) throw new Error("Supabase not configured");
+    
+    const { error } = await sb
+      .from("projects")
+      .delete()
+      .eq("id", id);
+    
+    if (error) {
+      console.error("Error deleting project:", error);
+      throw error;
+    }
   }
 
   async submitRating(rating: InsertRating): Promise<Rating> {
-    const result = await db.insert(ratings).values({
-      projectId: rating.projectId,
-      userId: rating.userId,
+    const sb = getSupabaseClient();
+    if (!sb) throw new Error("Supabase not configured");
+    
+    // Transform camelCase to snake_case for Supabase
+    const ratingData = {
+      project_id: rating.projectId,
+      user_id: rating.userId,
       rating: rating.rating,
       review: rating.review || null,
-    }).returning();
+    };
+    
+    // Insert the rating
+    const { data: submittedRating, error: ratingError } = await sb
+      .from("ratings")
+      .insert([ratingData])
+      .select()
+      .single();
+    
+    if (ratingError) {
+      console.error("Error submitting rating:", ratingError);
+      throw ratingError;
+    }
 
-    const allRatings = await db.select().from(ratings).where(eq(ratings.projectId, rating.projectId));
-    const averageRating = allRatings.length > 0
-      ? (allRatings.reduce((sum, r) => sum + r.rating, 0) / allRatings.length).toFixed(1)
+    // Fetch all ratings for this project to calculate average
+    const { data: allRatings, error: ratingsError } = await sb
+      .from("ratings")
+      .select("rating")
+      .eq("project_id", rating.projectId);
+    
+    if (ratingsError) {
+      console.error("Error fetching ratings for aggregation:", ratingsError);
+      throw ratingsError;
+    }
+
+    // Calculate average rating
+    const ratings = (allRatings as { rating: number }[]) || [];
+    const averageRating = ratings.length > 0
+      ? (ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length).toFixed(1)
       : "0";
 
-    await db.update(projects).set({
-      rating: averageRating,
-      ratingCount: allRatings.length,
-    }).where(eq(projects.id, rating.projectId));
+    // Update project with new average rating and count
+    const { error: updateError } = await sb
+      .from("projects")
+      .update({
+        rating: averageRating,
+        rating_count: ratings.length,
+      })
+      .eq("id", rating.projectId);
+    
+    if (updateError) {
+      console.error("Error updating project rating:", updateError);
+      throw updateError;
+    }
 
-    return result[0];
+    return submittedRating as Rating;
   }
 
   async getRatingsForProject(projectId: string): Promise<Rating[]> {
-    return await db.select().from(ratings).where(eq(ratings.projectId, projectId));
+    const sb = getSupabaseClient();
+    if (!sb) return [];
+    
+    const { data, error } = await sb
+      .from("ratings")
+      .select("*")
+      .eq("project_id", projectId);
+    
+    if (error) {
+      console.error("Error fetching ratings:", error);
+      return [];
+    }
+    return (data as Rating[]) || [];
   }
 }
 
-export const storage = new PostgresStorage();
+export const storage = new SupabaseStorage();
