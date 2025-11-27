@@ -98,7 +98,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Unauthorized to delete this project" });
       }
       
-      // TODO: Implement delete in storage
+      await storage.deleteProject(id);
       res.json({ success: true });
     } catch (error) {
       console.error("Error deleting project:", error);

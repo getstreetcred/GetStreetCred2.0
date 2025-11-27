@@ -36,7 +36,8 @@ export const ratings = pgTable("ratings", {
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
-});
+  role: true,
+}).partial({ role: true });
 
 export const insertProjectSchema = createInsertSchema(projects).pick({
   name: true,
