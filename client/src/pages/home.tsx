@@ -274,7 +274,16 @@ export default function Home() {
       // Sort by rating count (number of reviews) in descending order - most reviewed first
       const countA = typeof a.ratingCount === 'string' ? parseInt(a.ratingCount) : (a.ratingCount || 0);
       const countB = typeof b.ratingCount === 'string' ? parseInt(b.ratingCount) : (b.ratingCount || 0);
-      return countB - countA;
+      
+      // Primary sort: by rating count (most reviewed first)
+      if (countB !== countA) {
+        return countB - countA;
+      }
+      
+      // Secondary sort: if counts are equal, sort by rating (highest rating first)
+      const ratingA = typeof a.rating === 'string' ? parseFloat(a.rating) : a.rating;
+      const ratingB = typeof b.rating === 'string' ? parseFloat(b.rating) : b.rating;
+      return ratingB - ratingA;
     });
 
   const filteredTopRatedProjects = filteredTrendingProjects
