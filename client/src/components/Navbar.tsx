@@ -102,19 +102,21 @@ export default function Navbar({ onSignIn, onJoinNow, onAddProject }: NavbarProp
 
           <div className="flex items-center gap-2">
             <div className="hidden sm:flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="gap-2"
-                onClick={() => {
-                  console.log("Add project clicked");
-                  onAddProject?.();
-                }}
-                data-testid="button-add-project"
-              >
-                <Plus className="w-4 h-4" />
-                <span className="hidden md:inline">Add Project</span>
-              </Button>
+              {user && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => {
+                    console.log("Add project clicked");
+                    onAddProject?.();
+                  }}
+                  data-testid="button-add-project"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span className="hidden md:inline">Add Project</span>
+                </Button>
+              )}
               {user ? (
                 <Button
                   variant="outline"
@@ -205,19 +207,24 @@ export default function Navbar({ onSignIn, onJoinNow, onAddProject }: NavbarProp
                       </Button>
                     )
                   ))}
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start gap-3 text-foreground"
-                    onClick={() => {
-                      onAddProject?.();
-                      setMobileMenuOpen(false);
-                    }}
-                    data-testid="mobile-button-add-project"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add Project
-                  </Button>
-                  <div className="border-t border-border my-4" />
+                  {user && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start gap-3 text-foreground"
+                        onClick={() => {
+                          onAddProject?.();
+                          setMobileMenuOpen(false);
+                        }}
+                        data-testid="mobile-button-add-project"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add Project
+                      </Button>
+                      <div className="border-t border-border my-4" />
+                    </>
+                  )}
+                  {!user && <div className="border-t border-border my-4" />}
                   {user ? (
                     <Button
                       variant="outline"
