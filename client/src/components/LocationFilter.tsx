@@ -76,6 +76,17 @@ export default function LocationFilter({
                     placeholder="e.g., 'Burj', 'Bridge', 'Tower'..."
                     value={searchQuery}
                     onChange={(e) => onSearchChange?.(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && searchQuery.trim() !== "") {
+                        // Scroll to projects section when Enter is pressed
+                        setTimeout(() => {
+                          const projectsSection = document.getElementById("trending-section");
+                          if (projectsSection) {
+                            projectsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+                          }
+                        }, 100);
+                      }
+                    }}
                     className="pl-10 border-border/50 focus:border-border transition-colors"
                     data-testid="input-search-projects"
                   />
