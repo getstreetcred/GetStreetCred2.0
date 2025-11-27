@@ -141,6 +141,11 @@ export default function Home() {
     : MOCK_PROJECTS;
 
   const topRatedProjects: TopProject[] = trendingProjects
+    .sort((a, b) => {
+      const ratingA = typeof a.rating === 'string' ? parseFloat(a.rating) : a.rating;
+      const ratingB = typeof b.rating === 'string' ? parseFloat(b.rating) : b.rating;
+      return ratingB - ratingA; // Sort by rating descending (highest first)
+    })
     .slice(0, 5)
     .map((p, idx) => ({
       ...p,
