@@ -12,6 +12,7 @@ import ProjectDetailModal, { type ProjectDetail } from "@/components/ProjectDeta
 import AddProjectModal from "@/components/AddProjectModal";
 import { type Project } from "@/components/ProjectCard";
 import { queryClient } from "@/lib/queryClient";
+import { useAuth } from "@/lib/auth-context";
 
 import heroImage from "@assets/stock_images/hong_kong_zhuhai_mac_56c5fcf7.jpg";
 import burjKhalifa from "@assets/stock_images/burj_khalifa_dubai_s_0d086f10.jpg";
@@ -95,6 +96,7 @@ const PROJECT_DESCRIPTIONS: Record<string, string> = {
 };
 
 export default function Home() {
+  const { user } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<"signin" | "signup">("signin");
   const [selectedCategory, setSelectedCategory] = useState("all");
