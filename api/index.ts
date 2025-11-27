@@ -1,12 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import express from "express";
-import { registerRoutes } from "../server/routes";
 
-// Create Express app
+// Create Express app immediately
 const app = express();
 
-// Middleware - must be set up BEFORE routes
+// Middleware
 app.use(express.json({
   limit: "10mb",
   verify: (req: any, _res, buf) => {
@@ -32,10 +31,7 @@ app.use((req, res, next) => {
     if (reqPath.startsWith("/api")) {
       let logLine = `${req.method} ${reqPath} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
+        logLine += ` :: ${JSON.stringify(capturedJsonResponse).substring(0, 100)}`;
       }
       console.log("[express]", logLine);
     }
@@ -44,62 +40,41 @@ app.use((req, res, next) => {
   next();
 });
 
-// Flag to track if routes are initialized
+// Lazy load and initialize routes
 let routesInitialized = false;
-let initPromise: Promise<void> | null = null;
+let initError: Error | null = null;
 
-async function initializeRoutes() {
-  if (routesInitialized) return;
-  if (!initPromise) {
-    initPromise = (async () => {
-      try {
-        await registerRoutes(app);
-        routesInitialized = true;
-      } catch (error) {
-        console.error("[express] Failed to register routes:", error);
-        throw error;
-      }
-    })();
-  }
-  await initPromise;
-}
-
-// Middleware to ensure routes are initialized before handling requests
 app.use(async (req, res, next) => {
-  if (!routesInitialized) {
+  if (!routesInitialized && !initError) {
     try {
-      await initializeRoutes();
+      const { registerRoutes } = await import("../server/routes.js");
+      await registerRoutes(app);
+      routesInitialized = true;
     } catch (error) {
+      console.error("[express] Failed to initialize routes:", error);
+      initError = error as Error;
       return res.status(500).json({ error: "Failed to initialize server" });
     }
   }
+  
+  if (initError) {
+    return res.status(500).json({ error: "Server initialization failed" });
+  }
+  
   next();
 });
 
-// After routes are set up, add static file serving and error handler
-// These will be added after the first request initializes routes
-app.use((req, res, next) => {
-  // This runs after routes, so static files won't interfere
-  const distPath = path.resolve(import.meta.dirname, "public");
-  if (fs.existsSync(distPath)) {
-    express.static(distPath)(req, res, next);
-  } else {
-    next();
-  }
-});
-
-// Catch-all for index.html
-app.get("*", (req, res) => {
-  const distPath = path.resolve(import.meta.dirname, "public");
-  const indexPath = path.resolve(distPath, "index.html");
-  if (fs.existsSync(indexPath)) {
+// Static file serving
+const distPath = path.resolve(import.meta.dirname, "..", "dist", "public");
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+  app.use("*", (req, res) => {
+    const indexPath = path.resolve(distPath, "index.html");
     res.sendFile(indexPath);
-  } else {
-    res.status(404).json({ error: "Not found" });
-  }
-});
+  });
+}
 
-// Error handler (final)
+// Error handler
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error("[express] Error:", err);
   const status = err.status || err.statusCode || 500;
@@ -107,9 +82,16 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
   res.status(status).json({ message });
 });
 
-// Initialize routes immediately for best performance
-initializeRoutes().catch(err => {
-  console.error("[express] Failed to initialize routes on startup:", err);
-});
+// Try to initialize routes immediately on load
+(async () => {
+  try {
+    const { registerRoutes } = await import("../server/routes.js");
+    await registerRoutes(app);
+    routesInitialized = true;
+    console.log("[express] Routes initialized on startup");
+  } catch (error) {
+    console.error("[express] Failed to initialize routes on startup:", error);
+  }
+})();
 
 export default app;
