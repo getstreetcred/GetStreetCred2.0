@@ -272,18 +272,24 @@ export default function Home() {
     })
     .sort((a, b) => {
       // Sort by rating count (number of reviews) in descending order - most reviewed first
-      const countA = typeof a.ratingCount === 'string' ? parseInt(a.ratingCount, 10) : (a.ratingCount || 0);
-      const countB = typeof b.ratingCount === 'string' ? parseInt(b.ratingCount, 10) : (b.ratingCount || 0);
+      const countA = Math.max(0, typeof a.ratingCount === 'string' ? parseInt(a.ratingCount, 10) : (a.ratingCount || 0));
+      const countB = Math.max(0, typeof b.ratingCount === 'string' ? parseInt(b.ratingCount, 10) : (b.ratingCount || 0));
       
-      // Primary sort: by rating count (most reviewed first) - DESCENDING order
-      if (countA !== countB) {
-        return countB - countA; // Higher count first (descending)
+      console.log(`Sort comparing: ${a.name} (count=${countA}) vs ${b.name} (count=${countB}), diff=${countB - countA}`);
+      
+      // ONLY sort by rating count - STRICTLY descending (highest count first)
+      const result = countB - countA;
+      if (result !== 0) {
+        console.log(`  → Primary sort by count: ${result}`);
+        return result;
       }
       
       // Secondary sort: if counts are equal, sort by rating (highest rating first)
       const ratingA = typeof a.rating === 'string' ? parseFloat(a.rating) : (a.rating || 0);
       const ratingB = typeof b.rating === 'string' ? parseFloat(b.rating) : (b.rating || 0);
-      return ratingB - ratingA; // Higher rating first (descending)
+      const ratingResult = ratingB - ratingA;
+      console.log(`  → Secondary sort by rating: ${a.name} (${ratingA}) vs ${b.name} (${ratingB}) = ${ratingResult}`);
+      return ratingResult;
     });
   
   console.log(`Trending - Category: ${selectedCategory}, Location: ${selectedLocation}, Results:`, 
