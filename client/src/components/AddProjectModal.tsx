@@ -26,6 +26,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertProjectSchema } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth-context";
 import { Upload, Calendar } from "lucide-react";
 
 interface AddProjectModalProps {
@@ -58,6 +59,7 @@ export default function AddProjectModal({
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [yearPickerOpen, setYearPickerOpen] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
   const isEditing = !!editingProject;
 
   const form = useForm({
@@ -105,10 +107,16 @@ export default function AddProjectModal({
     try {
       const method = isEditing ? "PATCH" : "POST";
       const url = isEditing ? `/api/projects/${editingProject.id}` : "/api/projects";
+      
+      const payload = {
+        ...data,
+        ...(user && { userId: user.id, userRole: user.role }),
+      };
+      
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {

@@ -19,6 +19,7 @@ export interface ProjectDetail {
   ratingCount: number;
   completionYear: number;
   category?: string;
+  userId?: string;
 }
 
 interface ProjectDetailModalProps {
@@ -329,7 +330,7 @@ export default function ProjectDetailModal({
             )}
           </div>
 
-          {user && (
+          {user && (user.role === "admin" || user.id === project.userId) && (
             <div className="border-t border-border pt-4 flex gap-2">
               <Button
                 variant="secondary"
