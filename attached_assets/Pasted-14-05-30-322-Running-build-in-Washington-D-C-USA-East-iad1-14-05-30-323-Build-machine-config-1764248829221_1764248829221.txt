@@ -1,0 +1,46 @@
+14:05:30.322 Running build in Washington, D.C., USA (East) – iad1
+14:05:30.323 Build machine configuration: 2 cores, 8 GB
+14:05:30.332 Cloning github.com/getstreetcred/GetStreetCred2.0 (Branch: main, Commit: 21f73ca)
+14:05:30.333 Skipping build cache, deployment was triggered without cache.
+14:05:31.164 Cloning completed: 832.000ms
+14:05:31.523 Running "vercel build"
+14:05:31.943 Vercel CLI 48.11.0
+14:05:32.694 Installing dependencies...
+14:05:36.987 npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+14:05:36.999 npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+14:05:42.456 
+14:05:42.457 added 485 packages in 10s
+14:05:42.457 
+14:05:42.458 65 packages are looking for funding
+14:05:42.458   run `npm fund` for details
+14:05:42.624 
+14:05:42.624 > rest-express@1.0.0 build
+14:05:42.624 > vite build && esbuild server/index-prod.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/index.js
+14:05:42.625 
+14:05:42.926 [36mvite v5.4.20 [32mbuilding for production...[36m[39m
+14:05:42.981 transforming...
+14:05:44.093 
+14:05:44.093 A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+14:05:47.868 [32m✓[39m 1857 modules transformed.
+14:05:48.308 rendering chunks...
+14:05:48.322 computing gzip size...
+14:05:48.342 [2m../dist/public/[22m[32mindex.html                                         [39m[1m[2m  2.51 kB[22m[1m[22m[2m │ gzip:   0.95 kB[22m
+14:05:48.343 [2m../dist/public/[22m[2massets/[22m[32mhong_kong_zhuhai_mac_56c5fcf7-CFyPEs75.jpg  [39m[1m[2m224.15 kB[22m[1m[22m
+14:05:48.343 [2m../dist/public/[22m[2massets/[22m[32mshanghai_tower_moder_9c776149-68cLpNO5.jpg  [39m[1m[2m270.73 kB[22m[1m[22m
+14:05:48.343 [2m../dist/public/[22m[2massets/[22m[32mtokyo_skytree_tower__95808630-9sEvK9K1.jpg  [39m[1m[2m332.69 kB[22m[1m[22m
+14:05:48.344 [2m../dist/public/[22m[2massets/[22m[32msingapore_marina_bay_c37dd08f-BQ9dNAcL.jpg  [39m[1m[2m468.39 kB[22m[1m[22m
+14:05:48.344 [2m../dist/public/[22m[2massets/[22m[32msingapore_changi_air_22d4cc43-BIwGxc_9.jpg  [39m[1m[2m469.73 kB[22m[1m[22m
+14:05:48.344 [2m../dist/public/[22m[2massets/[22m[32mburj_khalifa_dubai_s_0d086f10-C4GIVHwd.jpg  [39m[1m[2m500.10 kB[22m[1m[22m
+14:05:48.344 [2m../dist/public/[22m[2massets/[22m[32mmodern_city_skyline__3c956477-DZJvn0Hk.jpg  [39m[1m[2m616.88 kB[22m[1m[22m
+14:05:48.344 [2m../dist/public/[22m[2massets/[22m[35mindex-DijY7CAK.css                          [39m[1m[2m 76.69 kB[22m[1m[22m[2m │ gzip:  12.47 kB[22m
+14:05:48.344 [2m../dist/public/[22m[2massets/[22m[36mindex-xcOQYVWv.js                           [39m[1m[33m555.62 kB[39m[22m[2m │ gzip: 167.88 kB[22m
+14:05:48.345 [32m✓ built in 5.39s[39m
+14:05:48.345 [33m
+14:05:48.348 (!) Some chunks are larger than 500 kB after minification. Consider:
+14:05:48.348 - Using dynamic import() to code-split the application
+14:05:48.348 - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+14:05:48.348 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
+14:05:48.390 ✘ [ERROR] The entry point "server/index-prod.ts" cannot be marked as external
+14:05:48.391 
+14:05:48.392 1 error
+14:05:48.404 Error: Command "cd client && npm run build" exited with 1
