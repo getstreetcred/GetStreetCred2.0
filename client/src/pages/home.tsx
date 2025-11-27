@@ -272,21 +272,27 @@ export default function Home() {
     })
     .sort((a, b) => {
       // Sort by rating count (number of reviews) in descending order - most reviewed first
-      const countA = typeof a.ratingCount === 'string' ? parseInt(a.ratingCount) : (a.ratingCount || 0);
-      const countB = typeof b.ratingCount === 'string' ? parseInt(b.ratingCount) : (b.ratingCount || 0);
+      const countA = typeof a.ratingCount === 'string' ? parseInt(a.ratingCount, 10) : (a.ratingCount || 0);
+      const countB = typeof b.ratingCount === 'string' ? parseInt(b.ratingCount, 10) : (b.ratingCount || 0);
       
-      // Primary sort: by rating count (most reviewed first) - DESCENDING
-      // countA - countB gives us ASCENDING, so we reverse it for DESCENDING
-      const countDiff = countA - countB;
-      if (countDiff !== 0) {
-        return -countDiff; // Negate to get descending order (highest count first)
+      // Primary sort: by rating count (most reviewed first) - DESCENDING order
+      if (countA !== countB) {
+        return countB - countA; // Higher count first (descending)
       }
       
       // Secondary sort: if counts are equal, sort by rating (highest rating first)
-      const ratingA = typeof a.rating === 'string' ? parseFloat(a.rating) : a.rating;
-      const ratingB = typeof b.rating === 'string' ? parseFloat(b.rating) : b.rating;
-      return ratingB - ratingA;
+      const ratingA = typeof a.rating === 'string' ? parseFloat(a.rating) : (a.rating || 0);
+      const ratingB = typeof b.rating === 'string' ? parseFloat(b.rating) : (b.rating || 0);
+      return ratingB - ratingA; // Higher rating first (descending)
     });
+  
+  console.log(`Trending - Category: ${selectedCategory}, Location: ${selectedLocation}, Results:`, 
+    filteredTrendingProjects.map(p => ({ 
+      name: p.name, 
+      category: p.category,
+      count: p.ratingCount, 
+      rating: p.rating 
+    })));
 
   const filteredTopRatedProjects = filteredTrendingProjects
     .sort((a, b) => {
