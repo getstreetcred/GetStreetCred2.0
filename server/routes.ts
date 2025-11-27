@@ -305,27 +305,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "User not found" });
       }
 
-      const sb = require("@supabase/supabase-js").createClient(
-        process.env.SUPABASE_URL,
-        process.env.SUPABASE_ANON_KEY
+      // Build update payload with only provided fields
+      const updateData: any = {};
+      if (username !== undefined && username) {
+        updateData.username = username;
+      }
+      if (password !== undefined && password) {
+        updateData.password = password;
+      }
+      if (profilePictureUrl !== undefined) {
+        updateData.profilePictureUrl = profilePictureUrl;
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        return res.status(400).json({ error: "No fields to update" });
+      }
+
+      // Update in Supabase directly with snake_case field names
+      const { createClient } = await import("@supabase/supabase-js");
+      const sb = createClient(
+        process.env.SUPABASE_URL || "",
+        process.env.SUPABASE_ANON_KEY || ""
       );
 
       const updatePayload: any = {};
-      
-      // Only include fields that are being updated
-      if (username !== undefined && username) {
-        updatePayload.username = username;
-      }
-      if (password !== undefined && password) {
-        updatePayload.password = password;
-      }
-      if (profilePictureUrl !== undefined) {
-        updatePayload.profile_picture_url = profilePictureUrl;
-      }
-
-      // If nothing to update, return error
-      if (Object.keys(updatePayload).length === 0) {
-        return res.status(400).json({ error: "No fields to update" });
+      if (updateData.username) updatePayload.username = updateData.username;
+      if (updateData.password) updatePayload.password = updateData.password;
+      if (updateData.profilePictureUrl !== undefined) {
+        updatePayload.profile_picture_url = updateData.profilePictureUrl;
       }
 
       const { data: updatedUser, error } = await sb
