@@ -46,6 +46,7 @@ const categories = [
   "Hotel & Casino",
   "Tower",
   "Urban Development",
+  "Roads",
 ];
 
 export default function AddProjectModal({
