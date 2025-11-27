@@ -8,6 +8,7 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   role: text("role").default("user").notNull(),
+  profilePictureUrl: text("profile_picture_url"),
 });
 
 export const projects = pgTable("projects", {
@@ -39,6 +40,12 @@ export const insertUserSchema = createInsertSchema(users).pick({
   role: true,
 }).partial({ role: true });
 
+export const updateUserSchema = z.object({
+  username: z.string().min(1).optional(),
+  password: z.string().min(1).optional(),
+  profilePictureUrl: z.string().url().optional(),
+});
+
 export const insertProjectSchema = createInsertSchema(projects).pick({
   name: true,
   location: true,
@@ -56,6 +63,7 @@ export const insertRatingSchema = createInsertSchema(ratings).pick({
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type UpdateUser = z.infer<typeof updateUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Project = typeof projects.$inferSelect;
 export type InsertProject = z.infer<typeof insertProjectSchema>;

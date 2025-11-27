@@ -8,7 +8,8 @@ import {
   SheetHeader,
   SheetTitle 
 } from "@/components/ui/sheet";
-import { Navigation, Menu, X, TrendingUp, Award, Plus, LogOut } from "lucide-react";
+import { Navigation, Menu, X, TrendingUp, Award, Plus, LogOut, User } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/lib/auth-context";
 
 interface NavLink {
@@ -118,15 +119,32 @@ export default function Navbar({ onSignIn, onJoinNow, onAddProject }: NavbarProp
                 </Button>
               )}
               {user ? (
-                <Button
-                  variant="outline"
-                  className="border-primary text-primary gap-2"
-                  onClick={handleLogout}
-                  data-testid="button-logout"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Logout</span>
-                </Button>
+                <>
+                  <Link href="/profile" data-testid="link-profile">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-2"
+                    >
+                      <Avatar className="w-6 h-6">
+                        {user.profilePictureUrl && (
+                          <AvatarImage src={user.profilePictureUrl} alt={user.email} />
+                        )}
+                        <AvatarFallback>{user.email.charAt(0).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <span className="hidden md:inline text-sm">{user.email.split("@")[0]}</span>
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    className="border-primary text-primary gap-2"
+                    onClick={handleLogout}
+                    data-testid="button-logout"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Logout</span>
+                  </Button>
+                </>
               ) : (
                 <>
                   <Button

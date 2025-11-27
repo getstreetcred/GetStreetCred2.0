@@ -279,6 +279,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user's created projects
+  app.get("/api/user-projects/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const projects = await storage.getProjects();
+      const userProjects = projects.filter(p => p.user_id === userId);
+      res.json(userProjects.map(transformProject));
+    } catch (error) {
+      console.error("Error fetching user projects:", error);
+      res.status(500).json({ error: "Failed to fetch user projects" });
+    }
+  });
+
+  // Update user profile
+  app.patch("/api/user/profile", async (req, res) => {
+    try {
+      const { userId, username, password, profilePictureUrl } = req.body;
+      if (!userId) {
+        return res.status(400).json({ error: "User ID required" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const updateData: any = {};
+      if (username) updateData.username = username;
+      if (password) updateData.password = password;
+      if (profilePictureUrl !== undefined) updateData.profilePictureUrl = profilePictureUrl;
+
+      const sb = require("@supabase/supabase-js").createClient(
+        process.env.SUPABASE_URL,
+        process.env.SUPABASE_ANON_KEY
+      );
+
+      const updatePayload: any = {};
+      if (username) updatePayload.username = username;
+      if (password) updatePayload.password = password;
+      if (profilePictureUrl !== undefined) updatePayload.profile_picture_url = profilePictureUrl;
+
+      const { data: updatedUser, error } = await sb
+        .from("users")
+        .update(updatePayload)
+        .eq("id", userId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error updating profile:", error);
+        throw error;
+      }
+
+      res.json({
+        id: updatedUser.id,
+        email: updatedUser.username,
+        role: updatedUser.role,
+        profilePictureUrl: updatedUser.profile_picture_url,
+      });
+    } catch (error: any) {
+      console.error("Error updating user profile:", error);
+      res.status(400).json({ error: error.message || "Failed to update profile" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

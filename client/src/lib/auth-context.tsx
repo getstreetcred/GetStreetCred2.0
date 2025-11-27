@@ -4,6 +4,7 @@ export interface AuthUser {
   id: string;
   email: string;
   role: "admin" | "user";
+  profilePictureUrl?: string;
 }
 
 interface AuthContextType {
@@ -57,7 +58,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser({
       id: data.id,
       email: data.email,
-      role: data.role || "user"
+      role: data.role || "user",
+      profilePictureUrl: data.profilePictureUrl
     });
   };
 
@@ -77,7 +79,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser({
       id: data.id,
       email: data.email,
-      role: data.role || "user"
+      role: data.role || "user",
+      profilePictureUrl: data.profilePictureUrl
     });
   };
 
