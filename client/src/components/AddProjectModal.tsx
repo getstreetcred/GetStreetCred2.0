@@ -27,7 +27,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertProjectSchema } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
-import { Upload, Calendar } from "lucide-react";
+import { Upload, Calendar, Link as LinkIcon } from "lucide-react";
 
 interface AddProjectModalProps {
   open: boolean;
@@ -59,6 +59,8 @@ export default function AddProjectModal({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [yearPickerOpen, setYearPickerOpen] = useState(false);
+  const [uploadMode, setUploadMode] = useState<"device" | "url">("device");
+  const [urlInput, setUrlInput] = useState("");
   const { toast } = useToast();
   const { user } = useAuth();
   const isEditing = !!editingProject;
@@ -101,6 +103,21 @@ export default function AddProjectModal({
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleUrlSubmit = () => {
+    if (!urlInput.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid URL",
+        variant: "destructive",
+      });
+      return;
+    }
+    setImagePreview(urlInput);
+    form.setValue("imageUrl", urlInput);
+    setUrlInput("");
+    setUploadMode("device");
   };
 
   const handleSubmit = async (data: any) => {
@@ -310,27 +327,78 @@ export default function AddProjectModal({
                   <FormControl>
                     <div className="space-y-3">
                       {!imagePreview && !form.watch("imageUrl") ? (
-                        <label
-                          htmlFor="image-upload"
-                          className="flex items-center justify-center w-full px-4 py-6 border-2 border-dashed border-border rounded-lg hover:border-primary/50 cursor-pointer transition-colors"
-                          data-testid="image-upload-area"
-                        >
-                          <div className="flex flex-col items-center justify-center gap-2">
-                            <Upload className="w-6 h-6 text-muted-foreground" />
-                            <div className="text-sm text-muted-foreground text-center">
-                              <p className="font-medium text-foreground">Click to upload an image</p>
-                              <p className="text-xs">PNG, JPG, GIF up to 10MB</p>
-                            </div>
+                        <div className="space-y-3">
+                          <div className="flex gap-2 border-b border-border pb-3">
+                            <Button
+                              type="button"
+                              variant={uploadMode === "device" ? "default" : "ghost"}
+                              size="sm"
+                              className="gap-2"
+                              onClick={() => setUploadMode("device")}
+                              data-testid="button-upload-device"
+                            >
+                              <Upload className="w-4 h-4" />
+                              Upload from Device
+                            </Button>
+                            <Button
+                              type="button"
+                              variant={uploadMode === "url" ? "default" : "ghost"}
+                              size="sm"
+                              className="gap-2"
+                              onClick={() => setUploadMode("url")}
+                              data-testid="button-upload-url"
+                            >
+                              <LinkIcon className="w-4 h-4" />
+                              Paste URL
+                            </Button>
                           </div>
-                          <input
-                            id="image-upload"
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageUpload}
-                            className="hidden"
-                            data-testid="input-image-file"
-                          />
-                        </label>
+                          
+                          {uploadMode === "device" ? (
+                            <label
+                              htmlFor="image-upload"
+                              className="flex items-center justify-center w-full px-4 py-6 border-2 border-dashed border-border rounded-lg hover:border-primary/50 cursor-pointer transition-colors"
+                              data-testid="image-upload-area"
+                            >
+                              <div className="flex flex-col items-center justify-center gap-2">
+                                <Upload className="w-6 h-6 text-muted-foreground" />
+                                <div className="text-sm text-muted-foreground text-center">
+                                  <p className="font-medium text-foreground">Click to upload an image</p>
+                                  <p className="text-xs">PNG, JPG, GIF up to 10MB</p>
+                                </div>
+                              </div>
+                              <input
+                                id="image-upload"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                                className="hidden"
+                                data-testid="input-image-file"
+                              />
+                            </label>
+                          ) : (
+                            <div className="space-y-2">
+                              <Input
+                                placeholder="https://example.com/image.jpg"
+                                value={urlInput}
+                                onChange={(e) => setUrlInput(e.target.value)}
+                                onKeyPress={(e) => {
+                                  if (e.key === "Enter") {
+                                    handleUrlSubmit();
+                                  }
+                                }}
+                                data-testid="input-image-url"
+                              />
+                              <Button
+                                type="button"
+                                onClick={handleUrlSubmit}
+                                className="w-full"
+                                data-testid="button-submit-url"
+                              >
+                                Use this URL
+                              </Button>
+                            </div>
+                          )}
+                        </div>
                       ) : null}
                       {(imagePreview || form.watch("imageUrl")) && (
                         <div className="relative">
@@ -339,6 +407,13 @@ export default function AddProjectModal({
                             alt="Preview"
                             className="w-full h-40 object-cover rounded-lg"
                             data-testid="image-preview"
+                            onError={() => {
+                              toast({
+                                title: "Error",
+                                description: "Failed to load image. Please check the URL.",
+                                variant: "destructive",
+                              });
+                            }}
                           />
                           <Button
                             type="button"
