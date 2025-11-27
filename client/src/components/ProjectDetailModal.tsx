@@ -75,27 +75,16 @@ export default function ProjectDetailModal({
     return count.toString();
   };
 
-  const generateUUID = () => {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
-  };
-
   const handleSubmitRating = async () => {
-    if (userRating > 0) {
+    if (userRating > 0 && user) {
       try {
-        // Generate a temporary UUID for anonymous users (TODO: Replace with actual user ID from auth)
-        const userId = generateUUID();
-        
-        // Submit rating to backend
+        // Submit rating to backend with actual user ID
         const response = await fetch("/api/ratings", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             projectId: project.id,
-            userId: userId,
+            userId: user.id,
             rating: userRating,
             review: review || null,
           }),
