@@ -1,32 +1,73 @@
 import fs from "node:fs";
 import path from "node:path";
-import { type Server } from "node:http";
 
-import express, { type Express } from "express";
-import runApp from "../server/app";
+import express from "express";
+import { registerRoutes } from "../server/routes";
 
-export async function serveStatic(app: Express, _server: Server) {
-  const distPath = path.resolve(import.meta.dirname, "public");
+const app = express();
 
-  if (!fs.existsSync(distPath)) {
-    throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`,
-    );
+// Middleware
+app.use(express.json({
+  limit: "10mb",
+  verify: (req: any, _res, buf) => {
+    req.rawBody = buf;
   }
+}));
+app.use(express.urlencoded({ limit: "10mb", extended: false }));
 
-  app.use(express.static(distPath));
+// Logging middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  const reqPath = req.path;
+  let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
-  // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+  const originalResJson = res.json;
+  res.json = function (bodyJson: any, ...args: any[]) {
+    capturedJsonResponse = bodyJson;
+    return originalResJson.apply(res, [bodyJson, ...args]);
+  };
+
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    if (reqPath.startsWith("/api")) {
+      let logLine = `${req.method} ${reqPath} ${res.statusCode} in ${duration}ms`;
+      if (capturedJsonResponse) {
+        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      }
+      if (logLine.length > 80) {
+        logLine = logLine.slice(0, 79) + "…";
+      }
+      console.log(logLine);
+    }
   });
-}
 
-// Start the app immediately - Vercel will handle the serverless function wrapping
-runApp(serveStatic).catch((err) => {
-  console.error("Failed to start app:", err);
-  process.exit(1);
+  next();
 });
 
-// Export the app instance for Vercel to use
-export { app } from "../server/app";
+// Initialize routes (this will set up the HTTP server internally but we don't listen to it)
+(async () => {
+  try {
+    await registerRoutes(app);
+    
+    // Static file serving
+    const distPath = path.resolve(import.meta.dirname, "public");
+    if (fs.existsSync(distPath)) {
+      app.use(express.static(distPath));
+      app.use("*", (_req, res) => {
+        res.sendFile(path.resolve(distPath, "index.html"));
+      });
+    }
+
+    // Error handler
+    app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+      console.error("Error:", err);
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+      res.status(status).json({ message });
+    });
+  } catch (error) {
+    console.error("Failed to initialize app:", error);
+  }
+})();
+
+export default app;
