@@ -3,12 +3,24 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertProjectSchema, insertRatingSchema } from "@shared/schema";
 
+// Transform snake_case from Supabase to camelCase for frontend
+function transformProject(project: any) {
+  return {
+    ...project,
+    userId: project.user_id,
+    imageUrl: project.image_url,
+    ratingCount: project.rating_count,
+    completionYear: project.completion_year,
+    createdAt: project.created_at,
+  };
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all projects
   app.get("/api/projects", async (req, res) => {
     try {
       const projects = await storage.getProjects();
-      res.json(projects);
+      res.json(projects.map(transformProject));
     } catch (error) {
       console.error("Error fetching projects:", error);
       res.status(500).json({ error: "Failed to fetch projects" });
@@ -20,7 +32,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { category } = req.params;
       const projects = await storage.getProjectsByCategory(category);
-      res.json(projects);
+      res.json(projects.map(transformProject));
     } catch (error) {
       console.error("Error fetching projects by category:", error);
       res.status(500).json({ error: "Failed to fetch projects" });
@@ -35,7 +47,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
-      res.json(project);
+      res.json(transformProject(project));
     } catch (error) {
       console.error("Error fetching project:", error);
       res.status(500).json({ error: "Failed to fetch project" });
@@ -48,7 +60,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { userId, ...projectData } = req.body;
       const validatedData = insertProjectSchema.parse(projectData);
       const project = await storage.createProject(validatedData, userId);
-      res.status(201).json(project);
+      res.status(201).json(transformProject(project));
     } catch (error) {
       console.error("Error creating project:", error);
       res.status(400).json({ error: "Failed to create project" });
@@ -68,13 +80,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Allow if admin or if user is the project creator
-      if (userRole !== "admin" && project.userId !== userId) {
+      if (userRole !== "admin" && project.user_id !== userId) {
         return res.status(403).json({ error: "Unauthorized to update this project" });
       }
       
       const validatedData = insertProjectSchema.parse(req.body);
       const updatedProject = await storage.updateProject(id, validatedData);
-      res.json(updatedProject);
+      res.json(transformProject(updatedProject));
     } catch (error) {
       console.error("Error updating project:", error);
       res.status(400).json({ error: "Failed to update project" });
@@ -94,7 +106,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Allow if admin or if user is the project creator
-      if (userRole !== "admin" && project.userId !== userId) {
+      if (userRole !== "admin" && project.user_id !== userId) {
         return res.status(403).json({ error: "Unauthorized to delete this project" });
       }
       
@@ -113,7 +125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const rating = await storage.submitRating(validatedData);
       // Fetch updated project to return latest rating data
       const updatedProject = await storage.getProjectById(validatedData.projectId);
-      res.status(201).json({ rating, updatedProject });
+      res.status(201).json({ rating, updatedProject: updatedProject ? transformProject(updatedProject) : null });
     } catch (error) {
       console.error("Error submitting rating:", error);
       res.status(400).json({ error: "Failed to submit rating" });
