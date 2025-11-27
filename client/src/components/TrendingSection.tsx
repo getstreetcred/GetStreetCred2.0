@@ -29,12 +29,6 @@ export default function TrendingSection({
     const ratingB = typeof b.rating === 'string' ? parseFloat(b.rating) : (b.rating || 0);
     return ratingB - ratingA;
   });
-  
-  console.log("TrendingSection received projects, sorted order:", sortedProjects.map(p => ({
-    name: p.name,
-    ratingCount: p.ratingCount,
-    rating: p.rating
-  })));
 
   return (
     <section id="trending-section" className="py-12 md:py-16 bg-background scroll-mt-20">

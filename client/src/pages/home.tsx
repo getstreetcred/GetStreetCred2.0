@@ -286,13 +286,6 @@ export default function Home() {
       return ratingB - ratingA; // Higher rating first (descending)
     });
   
-  console.log(`Trending - Category: ${selectedCategory}, Location: ${selectedLocation}, Results:`, 
-    filteredTrendingProjects.map(p => ({ 
-      name: p.name, 
-      category: p.category,
-      count: p.ratingCount, 
-      rating: p.rating 
-    })));
 
   const filteredTopRatedProjects = filteredTrendingProjects
     .sort((a, b) => {
