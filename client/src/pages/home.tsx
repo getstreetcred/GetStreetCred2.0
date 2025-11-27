@@ -245,6 +245,12 @@ export default function Home() {
         (project.description || "").toLowerCase().includes(searchQuery.toLowerCase());
       
       return categoryMatch && locationMatch && searchMatch;
+    })
+    .sort((a, b) => {
+      // Sort by rating count (number of reviews) in descending order - most reviewed first
+      const countA = typeof a.ratingCount === 'string' ? parseInt(a.ratingCount) : (a.ratingCount || 0);
+      const countB = typeof b.ratingCount === 'string' ? parseInt(b.ratingCount) : (b.ratingCount || 0);
+      return countB - countA;
     });
 
   const filteredTopRatedProjects = filteredTrendingProjects
