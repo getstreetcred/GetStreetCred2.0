@@ -119,11 +119,12 @@ export default function Home() {
         name: p.name,
         location: p.location,
         description: p.description,
-        imageUrl: p.image_url,
+        imageUrl: p.imageUrl || p.image_url,
         category: p.category,
-        completionYear: p.completion_year,
+        completionYear: p.completionYear || p.completion_year,
         rating: p.rating ? parseFloat(p.rating) : 0,
-        ratingCount: p.rating_count || 0,
+        ratingCount: p.ratingCount || p.rating_count || 0,
+        userId: p.userId || p.user_id,
       }));
     },
   });
