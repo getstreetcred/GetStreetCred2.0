@@ -103,7 +103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Allow if admin or if user is the project creator
-      if (userRole !== "admin" && project.user_id !== userId) {
+      if (userRole !== "admin" && project.userId !== userId) {
         return res.status(403).json({ error: "Unauthorized to update this project" });
       }
       
@@ -129,7 +129,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Allow if admin or if user is the project creator
-      if (userRole !== "admin" && project.user_id !== userId) {
+      if (userRole !== "admin" && project.userId !== userId) {
         return res.status(403).json({ error: "Unauthorized to delete this project" });
       }
       
@@ -349,7 +349,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { userId } = req.params;
       const projects = await storage.getProjects();
-      const userProjects = projects.filter(p => p.user_id === userId);
+      const userProjects = projects.filter(p => p.userId === userId);
       res.json(userProjects.map(transformProject));
     } catch (error) {
       console.error("Error fetching user projects:", error);
