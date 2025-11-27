@@ -296,7 +296,14 @@ export default function Home() {
           locations={uniqueLocations}
           selectedLocation={selectedLocation}
           searchQuery={searchQuery}
-          onSelectLocation={setSelectedLocation}
+          onSelectLocation={(location) => {
+            setSelectedLocation(location);
+            // Reset category and search when location changes to show all projects from that location
+            if (location !== "all") {
+              setSelectedCategory("all");
+              setSearchQuery("");
+            }
+          }}
           onSearchChange={setSearchQuery}
         />
 
