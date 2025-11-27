@@ -275,28 +275,47 @@ export default function Home() {
   };
 
   const handleDeleteProject = async (projectId: string) => {
-    console.log(`Delete project: ${projectId}`);
+    console.log(`Delete project: ${projectId}, user:`, user);
+    
+    if (!user) {
+      alert("Please sign in to delete a project");
+      return;
+    }
+
     try {
+      console.log("Sending delete request with userId:", user.id, "userRole:", user.role);
       const response = await fetch(`/api/projects/${projectId}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: user?.id,
-          userRole: user?.role,
+          userId: user.id,
+          userRole: user.role,
         }),
       });
 
+      console.log("Delete response status:", response.status);
+      
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error("Failed to parse response:", parseError);
+        throw new Error("Invalid response from server");
+      }
+      
       if (!response.ok) {
-        throw new Error("Failed to delete project");
+        console.error("Delete failed with status:", response.status, "Response:", data);
+        throw new Error(data.error || "Failed to delete project");
       }
 
-      console.log(`Project deleted: ${projectId}`);
+      console.log(`Project deleted: ${projectId}`, data);
       // Refresh projects list
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       setProjectModalOpen(false);
-    } catch (error) {
-      console.error("Error deleting project:", error);
-      alert("Failed to delete project. Please try again.");
+      alert("Project deleted successfully");
+    } catch (error: any) {
+      console.error("Error deleting project:", error?.message || error);
+      alert(error?.message || "Failed to delete project. Please try again.");
     }
   };
 

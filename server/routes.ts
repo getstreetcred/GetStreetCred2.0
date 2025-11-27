@@ -6,11 +6,16 @@ import { insertProjectSchema, insertRatingSchema } from "@shared/schema";
 // Transform snake_case from Supabase to camelCase for frontend
 function transformProject(project: any) {
   return {
-    ...project,
-    userId: project.user_id,
+    id: project.id,
+    name: project.name,
+    location: project.location,
+    description: project.description,
     imageUrl: project.image_url,
-    ratingCount: project.rating_count,
+    category: project.category,
     completionYear: project.completion_year,
+    rating: project.rating,
+    ratingCount: project.rating_count,
+    userId: project.user_id,
     createdAt: project.created_at,
   };
 }
