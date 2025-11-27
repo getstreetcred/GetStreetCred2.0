@@ -33,6 +33,7 @@ export interface IStorage {
   deleteProject(id: string): Promise<void>;
   submitRating(rating: InsertRating): Promise<Rating>;
   getRatingsForProject(projectId: string): Promise<Rating[]>;
+  getRatedProjectsByUser(userId: string): Promise<Project[]>;
 }
 
 export class SupabaseStorage implements IStorage {
@@ -288,6 +289,40 @@ export class SupabaseStorage implements IStorage {
       return [];
     }
     return (data as Rating[]) || [];
+  }
+
+  async getRatedProjectsByUser(userId: string): Promise<Project[]> {
+    const sb = getSupabaseClient();
+    if (!sb) return [];
+    
+    const { data, error } = await sb
+      .from("ratings")
+      .select("project_id")
+      .eq("user_id", userId);
+    
+    if (error) {
+      console.error("Error fetching user ratings:", error);
+      return [];
+    }
+
+    const ratings = (data as { project_id: string }[]) || [];
+    if (ratings.length === 0) return [];
+
+    // Get unique project IDs
+    const projectIds = Array.from(new Set(ratings.map(r => r.project_id)));
+    
+    // Fetch projects for these IDs
+    const { data: projects, error: projectsError } = await sb
+      .from("projects")
+      .select("*")
+      .in("id", projectIds);
+    
+    if (projectsError) {
+      console.error("Error fetching rated projects:", projectsError);
+      return [];
+    }
+    
+    return (projects as Project[]) || [];
   }
 }
 

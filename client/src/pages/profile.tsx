@@ -112,8 +112,8 @@ export default function Profile() {
         description: "Project deleted successfully",
       });
       
-      // Refresh projects list
-      queryClient.invalidateQueries({ queryKey: ["/api/user-projects", user.id] });
+      // Refresh rated projects list
+      queryClient.invalidateQueries({ queryKey: ["/api/rated-projects", user.id] });
       setProjectModalOpen(false);
     } catch (error: any) {
       toast({
@@ -125,33 +125,31 @@ export default function Profile() {
   };
 
   const handleEditProject = (projectId: string) => {
-    const project = userProjects.find((p: any) => p.id === projectId);
-    if (project) {
-      setEditingProject(project);
-      setAddProjectModalOpen(true);
-      setProjectModalOpen(false);
-    }
+    toast({
+      title: "Info",
+      description: "Only admins can edit projects",
+    });
   };
 
   const handleProjectAdded = () => {
-    // Refresh projects from API
-    queryClient.invalidateQueries({ queryKey: ["/api/user-projects", user?.id] });
+    // Refresh rated projects from API
+    queryClient.invalidateQueries({ queryKey: ["/api/rated-projects", user?.id] });
     setAddProjectModalOpen(false);
     setEditingProject(null);
   };
 
   const handleSubmitRating = (projectId: string, rating: number, review?: string) => {
-    // Refresh projects to show updated ratings
-    queryClient.invalidateQueries({ queryKey: ["/api/user-projects", user?.id] });
+    // Refresh rated projects to show updated ratings
+    queryClient.invalidateQueries({ queryKey: ["/api/rated-projects", user?.id] });
   };
 
-  // Fetch user's projects
+  // Fetch user's rated projects
   const { data: userProjects = [], isLoading: isLoadingProjects } = useQuery({
-    queryKey: ["/api/user-projects", user?.id],
+    queryKey: ["/api/rated-projects", user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      const response = await fetch(`/api/user-projects/${user.id}`);
-      if (!response.ok) throw new Error("Failed to fetch projects");
+      const response = await fetch(`/api/rated-projects/${user.id}`);
+      if (!response.ok) throw new Error("Failed to fetch rated projects");
       const data = await response.json();
       return data.map((p: any) => ({
         id: p.id,
@@ -393,22 +391,22 @@ export default function Profile() {
           )}
         </Card>
 
-        {/* User Projects Section */}
+        {/* Rated Projects Section */}
         <div>
-          <h2 className="text-2xl font-bold mb-4" data-testid="text-my-projects-heading">
-            My Projects
+          <h2 className="text-2xl font-bold mb-4" data-testid="text-my-rated-projects-heading">
+            My Rated Projects
           </h2>
           {isLoadingProjects ? (
-            <p className="text-muted-foreground" data-testid="text-loading-projects">
+            <p className="text-muted-foreground" data-testid="text-loading-rated-projects">
               Loading projects...
             </p>
           ) : userProjects.length === 0 ? (
             <Card className="p-8 text-center">
-              <p className="text-muted-foreground mb-4" data-testid="text-no-projects">
-                You haven't created any projects yet
+              <p className="text-muted-foreground mb-4" data-testid="text-no-rated-projects">
+                You haven't rated any projects yet
               </p>
               <Button onClick={() => setLocation("/")} data-testid="button-explore-home">
-                Explore Home
+                Explore Home & Rate Projects
               </Button>
             </Card>
           ) : (

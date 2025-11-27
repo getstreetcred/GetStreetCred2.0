@@ -32,6 +32,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get projects rated by user
+  app.get("/api/rated-projects/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const projects = await storage.getRatedProjectsByUser(userId);
+      res.json(projects.map(transformProject));
+    } catch (error) {
+      console.error("Error fetching rated projects:", error);
+      res.status(500).json({ error: "Failed to fetch rated projects" });
+    }
+  });
+
   // Get projects by category
   app.get("/api/projects/category/:category", async (req, res) => {
     try {

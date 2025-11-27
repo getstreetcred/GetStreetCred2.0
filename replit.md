@@ -147,14 +147,28 @@ Database: Supabase only (no mixing with local PostgreSQL)
 - Location-based discovery with autocomplete dropdown
 
 **Project Management**
-- Create: Any logged-in user can add new infrastructure projects
-- Edit: Only project creators or admins can edit
-- Delete: Only project creators or admins can delete
-- Edit/Delete buttons only visible to authorized users
+- Create: Only admins can add new infrastructure projects (safety feature)
+- Edit: Only admins can edit projects
+- Delete: Only admins can delete projects
+- "Add Project" button only visible to admin users in navbar
+
+**User Profile**
+- Displays "My Rated Projects" - all projects the user has rated
+- Users can click rated projects to view details and manage their ratings
+- Empty state guides users to explore and rate projects on home page
 
 ## Recent Changes (November 27, 2025)
 
-**Admin System Implementation**
+**Final Pre-Launch Updates**
+- Admin-only project creation: Only admin@getstreetcred.com can create/edit/delete projects
+- "Add Project" button hidden from non-admin users in navbar (desktop & mobile)
+- Backend permission check enforces 403 error if non-admin attempts project creation
+- Profile page redesigned to show "My Rated Projects" instead of created projects
+- New API endpoint `/api/rated-projects/:userId` fetches projects rated by user
+- Storage layer method `getRatedProjectsByUser()` queries ratings table and returns projects
+- Regular users now have a meaningful profile showing their engagement (rated projects)
+
+**Previous Admin System**
 - Added `role` column to users table (default: "user")
 - Added `user_id` column to projects table to track project creator
 - Implemented admin auto-detection: anyone signing up with `admin@getstreetcred.com` becomes admin
