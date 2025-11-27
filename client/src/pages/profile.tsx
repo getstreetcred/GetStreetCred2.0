@@ -79,6 +79,64 @@ export default function Profile() {
     setProjectModalOpen(true);
   };
 
+  const handleDeleteProject = async (projectId: string) => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "Please sign in to delete a project",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          userRole: user.role,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to delete project");
+      }
+
+      toast({
+        title: "Success",
+        description: "Project deleted successfully",
+      });
+      
+      // Refresh projects list
+      queryClient.invalidateQueries({ queryKey: ["/api/user-projects", user.id] });
+      setProjectModalOpen(false);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete project",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEditProject = (projectId: string) => {
+    const project = userProjects.find((p: any) => p.id === projectId);
+    if (project) {
+      // Navigate to edit project (you could implement an edit modal here or navigate to a new page)
+      // For now, we can just log it
+      console.log("Edit project:", project);
+      setProjectModalOpen(false);
+      // You could open an edit project modal here if needed
+    }
+  };
+
+  const handleSubmitRating = (projectId: string, rating: number, review?: string) => {
+    // Refresh projects to show updated ratings
+    queryClient.invalidateQueries({ queryKey: ["/api/user-projects", user?.id] });
+  };
+
   // Fetch user's projects
   const { data: userProjects = [], isLoading: isLoadingProjects } = useQuery({
     queryKey: ["/api/user-projects", user?.id],
@@ -399,6 +457,9 @@ export default function Profile() {
           project={selectedProject}
           open={projectModalOpen}
           onOpenChange={setProjectModalOpen}
+          onSubmitRating={handleSubmitRating}
+          onEdit={handleEditProject}
+          onDelete={handleDeleteProject}
         />
       </div>
     </div>
