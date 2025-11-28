@@ -1,7 +1,4 @@
 import express from "express";
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { registerRoutes } from "../server/routes";
 
 // Create Express app
@@ -46,25 +43,6 @@ app.use((req, res, next) => {
 registerRoutes(app).catch((error) => {
   console.error("[express] Failed to initialize routes:", error);
 });
-
-// Serve static files from dist/public
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const distPath = path.resolve(__dirname, "..", "dist", "public");
-
-if (fs.existsSync(distPath)) {
-  app.use(express.static(distPath));
-  
-  // SPA fallback - serve index.html for non-API routes
-  app.use("*", (req, res) => {
-    const indexPath = path.resolve(distPath, "index.html");
-    if (fs.existsSync(indexPath)) {
-      res.sendFile(indexPath);
-    } else {
-      res.status(404).json({ error: "Not found" });
-    }
-  });
-}
 
 // Error handler
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
